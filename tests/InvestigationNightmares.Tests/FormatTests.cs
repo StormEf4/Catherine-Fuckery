@@ -250,3 +250,64 @@ public class CriTests
         Assert.False(c.Entries[1].Compressed);
     }
 }
+
+public class CrilaylaTests
+{
+    [Theory]
+    [InlineData(0x100)]
+    [InlineData(0x100 + 1)]
+    [InlineData(0x100 + 5000)]
+    public void Round_trips(int size)
+    {
+        var rng = new Random(size);
+        var data = new byte[size];
+        // mixture of runs, repeats and noise so both literals and back-references (incl. long VLE lengths) occur
+        for (int i = 0; i < size; i++)
+            data[i] = i % 700 < 300 ? (byte)(i % 7) : i % 700 < 400 ? (byte)0xAA : (byte)rng.Next(256);
+        var c = Crilayla.Compress(data);
+        Assert.True(Crilayla.IsCompressed(c));
+        Assert.Equal(data, Crilayla.Decompress(c));
+    }
+
+    [Fact]
+    public void Cpk_read_decompresses()
+    {
+        var data = new byte[3000];
+        for (int i = 0; i < data.Length; i++) data[i] = (byte)(i / 10);
+        var cpk = CriCpk.Build(new[] { ("bustup/b2_1_1.bin", Crilayla.Compress(data)) });
+        using var c = new CriCpk(new MemoryStream(cpk));
+        Assert.Equal(data, c.Read(c.Entries[0]));
+    }
+
+    [Fact]
+    public void Afs2_and_hca_headers_parse()
+    {
+        // AFS2 with two streams, alignment 32
+        var hca = new byte[64];
+        "HCA\0"u8.CopyTo(hca);
+        hca[6] = 0; hca[7] = 60;
+        "fmt\0"u8.CopyTo(hca.AsSpan(8));
+        hca[12] = 2; hca[13] = 0x00; hca[14] = 0xAC; hca[15] = 0x44; // 44100
+        hca[19] = 100;
+        "ciph"u8.CopyTo(hca.AsSpan(24)); hca[29] = 56;
+        var ms = new MemoryStream();
+        var w = new BinaryWriter(ms);
+        w.Write("AFS2"u8); w.Write(new byte[] { 2, 4, 2, 0 }); w.Write(2); w.Write((ushort)32); w.Write((ushort)0);
+        w.Write((ushort)7); w.Write((ushort)9);
+        w.Write(36); w.Write(36 + 64 + 28); w.Write(36 + 64 + 28 + 64);
+        while (ms.Length < 64) w.Write((byte)0);
+        w.Write(hca);
+        while (ms.Length < 128) w.Write((byte)0);
+        w.Write(hca);
+        var afs = new Afs2(ms.ToArray());
+        Assert.Equal(new[] { 7, 9 }, afs.Entries.Select(e => e.CueId));
+        Assert.Equal(64, afs.Entries[0].Offset);
+        Assert.Equal(128, afs.Entries[1].Offset);
+        var info = CriStreamInfo.Identify(ms.ToArray().AsSpan((int)afs.Entries[1].Offset));
+        Assert.Equal("HCA", info.Codec);
+        Assert.Equal(2, info.Channels);
+        Assert.Equal(44100, info.SampleRate);
+        Assert.Equal(100, info.Blocks);
+        Assert.Equal(56, info.CipherType);
+    }
+}

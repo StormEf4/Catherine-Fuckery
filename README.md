@@ -21,7 +21,7 @@ Colosseum versus with P4 character picks and Persona powers is planned for versi
 ## What you need
 
 - **Catherine Classic** (Steam). This is the game you play.
-- **Persona 4 Golden** (Steam, PC release), installed on the same PC. The mashup reads the Team's portraits, voices and music from it. If it isn't installed, Catherine runs normally and tells you why the Team didn't show up.
+- **Persona 4 Golden** (Steam, the current 64-bit release), installed on the same PC. The mashup reads the Team's portraits, voices and music from its `data.cpk`. If it isn't installed, Catherine runs normally and tells you why the Team didn't show up.
 - **Reloaded-II** (the mod loader), with its **reloaded.sharedlib.hooks** mod enabled.
 
 ## Install
@@ -36,8 +36,9 @@ If Persona 4 Golden isn't a Steam install, set `P4GPath` in `%LOCALAPPDATA%\Inve
 
 This version was built and tested on Linux, without either game. What that covers:
 
-- **Verified by tests:** the readers for P4G's archives, portraits, sound banks and audio formats; the Steam library finder; the whole Night 1 story flow (intro, landing talks, power charges, the boss and its taunts); the clock scaling; Garu's pull timing; and the controller hotkey handling. That is 40 C# tests plus 6 sheet tests. Content loading was also tested end to end against a synthetic P4G folder laid out the way the sheets describe.
-- **Not yet verified:** 37 sheet cells (run `python3 tools/preflight.py` to list them). They cover which P4G files hold each portrait, voice clip and song, which Catherine file opens for each stage, Catherine's grab button, and how Catherine reads its clock and controller. Until they're checked on a real install, expect things like missing portraits or a trigger that doesn't fire.
+- **Verified by tests:** the readers for CRI archives (CPK, CRILAYLA compression, @UTF tables, AFS2 wave archives), the portraits and the older P4G formats; the Steam library finder; the whole Night 1 story flow (intro, landing talks, power charges, the boss and its taunts); the clock scaling; Garu's pull timing; and the controller hotkey handling. That is 40 C# tests plus 6 sheet tests. Content loading was also tested end to end against a synthetic P4G folder laid out the way the sheets describe.
+- **Read from a real install so far:** both games' file layouts. Catherine's stage, boss and landing files, and P4G's 64-bit archives (portraits in `data.cpk` as `bustup/b<character>_<expression>_<frame>.bin`, music and voices as ADX2 `.awb` archives). Playing P4G's voices and music still needs their codec (most likely HCA), which comes next.
+- **Not yet verified:** the sheet cells `python3 tools/preflight.py` lists (run `python3 tools/preflight.py` to list them). They cover which P4G files hold each portrait, voice clip and song, which Catherine file opens for each stage, Catherine's grab button, and how Catherine reads its clock and controller. Until they're checked on a real install, expect things like missing portraits or a trigger that doesn't fire.
 
 The mod writes a log to `%LOCALAPPDATA%\InvestigationNightmares\log.txt`. Every problem names the sheet cell to fix, and the log also lists each file Catherine opens, which is how the stage triggers get filled in.
 
@@ -46,9 +47,9 @@ The mod writes a log to `%LOCALAPPDATA%\InvestigationNightmares\log.txt`. Every 
 On a PC with both games installed:
 
 ```
-recon p4g          # lists P4G's archives, exports the portraits as PNGs, lists every sound bank entry with its length
-recon p4g --wav SND/ROOT.xwb 0 200   # export clips to listen for the right barks
-recon catherine    # lists Catherine's data files and their formats (shows what format the music is in)
+recon p4g          # portrait previews per character number and persona card, the audio codec, music cue names
+recon catherine    # lists Catherine's data files and their formats
+recon list <folder># lists any folder and looks inside CRI .cpk/.acb/.csb archives
 recon sheets       # what's still unverified
 ```
 
@@ -59,7 +60,7 @@ Everything `recon` writes goes to `recon-out/`. It's game content for you to loo
 ## How it's built
 
 - `sheets/*.json` is the design and the source of truth: characters, dialogue, Persona powers, landings, the boss, music, stage triggers, controls, every hook and the tuning numbers. Each row becomes one C# record (`tools/gen_code.py`). `tools/preflight.py` cross-checks every cell and reference before each build.
-- `src/InvestigationNightmares.Core`: P4G readers (DW_PACK + Huffman, Atlus PAK, TMX, DDS, XACT wave banks, MS-ADPCM), the Steam finder, and the night's director (`Story/NightDirector.cs`). It runs on any OS and is fully unit-tested.
+- `src/InvestigationNightmares.Core`: P4G readers (CRI CPK + CRILAYLA, @UTF, AFS2/HCA headers, TMX, DDS, plus the 32-bit release's DW_PACK and XACT formats), the Steam finder, and the night's director (`Story/NightDirector.cs`). It runs on any OS and is fully unit-tested.
 - `src/InvestigationNightmares.Mod`: the Reloaded-II mod. It hooks Direct3D 9 `Present` and `Reset` (overlay), `CreateFile` (stage triggers and music swap), `QueryPerformanceCounter` and `timeGetTime` (Sukunda and Garu), and XInput, DirectInput and the window's key messages (hotkeys and Garu's button presses). It never touches code inside `Catherine.exe`.
 - `src/InvestigationNightmares.Recon`: the `recon` tool.
 - `./build.sh` runs preflight, codegen, all tests, then packages both zips into `dist/`.

@@ -63,100 +63,91 @@ int P4G(List<string> a)
     var outDir = Path.Combine(outRoot, "p4g");
     Directory.CreateDirectory(outDir);
     Console.WriteLine($"P4G: {dir}");
-
-    int wav = a.IndexOf("--wav");
-    if (wav >= 0)
+    using var c = InvestigationNightmares.Content.P4GContent.Open(dir);
+    Console.WriteLine($"{c.ArchiveCount} archives, {c.FileCount} files");
+    if (c.ArchiveCount == 0)
     {
-        var bankPath = Path.Combine(dir, a[wav + 1]);
-        int from = int.Parse(a[wav + 2]), to = int.Parse(a[wav + 3]);
-        using var bank = XactWaveBank.Open(bankPath);
-        var clipDir = Path.Combine(outDir, "clips", Path.GetFileNameWithoutExtension(bankPath));
-        Directory.CreateDirectory(clipDir);
-        for (int i = from; i <= Math.Min(to, bank.Entries.Count - 1); i++)
-        {
-            try { File.WriteAllBytes(Path.Combine(clipDir, $"{i:D5}.wav"), bank.Decode(bank.Entries[i]).ToWav()); }
-            catch (Exception e) { Console.WriteLine($"  {i}: {e.Message}"); }
-        }
-        Console.WriteLine($"clips written to {clipDir}");
-        return 0;
+        foreach (var p in c.Problems) Console.WriteLine("  " + p);
+        Console.WriteLine("No CRI archives found (data.cpk). Run: recon list \"" + dir + "\"");
+        return 1;
     }
 
-    // Archives
-    var entriesTxt = new StringBuilder();
-    var bustupDir = Path.Combine(outDir, "bustups");
-    Directory.CreateDirectory(bustupDir);
-    var bustupIndex = new StringBuilder();
-    int pngs = 0;
-    var allPaths = new List<string>();
-    foreach (var f in Directory.EnumerateFiles(dir, "*.pac").OrderBy(f => f))
+    // 1. One preview per bustup character number, to put names to numbers.
+    var prev = Path.Combine(outDir, "portraits");
+    Directory.CreateDirectory(prev);
+    var bustups = c.Paths.Where(p => p.StartsWith("bustup/", StringComparison.OrdinalIgnoreCase)).OrderBy(p => p, StringComparer.OrdinalIgnoreCase).ToList();
+    var byChar = bustups.GroupBy(p => System.Text.RegularExpressions.Regex.Match(p, @"bustup/b(\d+)_").Groups[1].Value).Where(g => g.Key != "");
+    var index = new StringBuilder();
+    void Export(string path, string file)
     {
-        DwPack pack;
-        try { pack = DwPack.Open(f); }
-        catch (Exception e) { entriesTxt.AppendLine($"{Path.GetFileName(f)}: not DW_PACK ({e.Message})"); continue; }
-        using (pack)
+        try
         {
-            entriesTxt.AppendLine($"== {Path.GetFileName(f)}: {pack.Entries.Count} entries");
-            foreach (var e in pack.Entries)
-            {
-                entriesTxt.AppendLine($"{e.Path}\t{e.UncompressedSize}\t{(e.Compressed ? "huffman" : "stored")}");
-                allPaths.Add(e.Path);
-            }
-            foreach (var e in pack.Entries.Where(e => e.Path.Contains("bustup", StringComparison.OrdinalIgnoreCase)).Take(800))
-            {
-                var problems = new List<string>();
-                List<ImageExtractor.Found> found;
-                try { found = ImageExtractor.Extract(pack.Read(e), e.Path, problems); }
-                catch (Exception ex) { bustupIndex.AppendLine($"{e.Path}\tERROR {ex.Message}"); continue; }
-                foreach (var img in found)
-                {
-                    var name = img.Name.Replace('/', '_').Replace('@', '_') + ".png";
-                    File.WriteAllBytes(Path.Combine(bustupDir, name), img.Image.ToPng());
-                    bustupIndex.AppendLine($"{img.Name}\t{img.Image.Width}x{img.Image.Height}\t{name}");
-                    pngs++;
-                }
-                foreach (var p in problems) bustupIndex.AppendLine($"{e.Path}\tPROBLEM {p}");
-            }
+            var problems = new List<string>();
+            var found = ImageExtractor.Extract(c.ReadFile(path)!, path, problems);
+            var best = found.OrderByDescending(f => (long)f.Image.Width * f.Image.Height).FirstOrDefault();
+            if (best == null) { index.AppendLine($"{path}\tno picture found: {string.Join("; ", problems)}"); return; }
+            File.WriteAllBytes(Path.Combine(prev, file), best.Image.Downscale(4).ToPng());
+            index.AppendLine($"{path}\t{best.Image.Width}x{best.Image.Height}\t{best.Name}\t{file}");
         }
+        catch (Exception e) { index.AppendLine($"{path}\tERROR {e.Message}"); }
     }
-    if (entriesTxt.Length == 0)
-        Console.WriteLine("No DW_PACK .pac archives in this folder (the 64-bit P4G stores its files differently). Run: recon list \"" + dir + "\"");
-    File.WriteAllText(Path.Combine(outDir, "pac_entries.txt"), entriesTxt.ToString());
-    File.WriteAllText(Path.Combine(outDir, "bustup_index.txt"), bustupIndex.ToString());
-    Console.WriteLine($"archives: {allPaths.Count} entries -> pac_entries.txt; {pngs} portrait images -> bustups/");
+    foreach (var g in byChar.OrderBy(g => int.Parse(g.Key)))
+    {
+        var pick = g.FirstOrDefault(p => p.EndsWith($"b{g.Key}_1_1.bin", StringComparison.OrdinalIgnoreCase)) ?? g.First();
+        Export(pick, $"char_{int.Parse(g.Key):D2}.png");
+    }
+    // Every Yosuke variant (one frame each), to find his Shadow.
+    foreach (var p in bustups.Where(p => System.Text.RegularExpressions.Regex.IsMatch(p, @"bustup/b2_\d+_[01]\.bin$")))
+        Export(p, "yosuke_" + Path.GetFileNameWithoutExtension(p) + ".png");
+    // The first persona cards, to find Izanagi and Jiraiya.
+    foreach (var p in c.Paths.Where(p => p.StartsWith("card/persona/", StringComparison.OrdinalIgnoreCase)).OrderBy(p => p).Take(40))
+        Export(p, "card_" + Path.GetFileNameWithoutExtension(p) + ".png");
+    File.WriteAllText(Path.Combine(outDir, "portraits.txt"), index.ToString());
+    Console.WriteLine($"portrait previews -> {prev}");
 
-    // What each character's glob matches today
+    // 2. What each character's glob matches today.
     var chars = new StringBuilder();
     foreach (var ch in Sheets.Characters)
     {
+        if (ch.BustupGlob == null) { chars.AppendLine($"{ch.Id}: no portrait (by design)"); continue; }
         var re = Glob.ToRegex(ch.BustupGlob);
-        var hits = allPaths.Where(p => re.IsMatch(p)).ToList();
-        chars.AppendLine($"{ch.Id} ({ch.BustupGlob}): {hits.Count} matches");
-        foreach (var h in hits.Take(20)) chars.AppendLine("    " + h);
+        var hits = c.Paths.Where(p => re.IsMatch(p)).OrderBy(p => p).ToList();
+        chars.AppendLine($"{ch.Id} ({ch.BustupGlob}): {hits.Count} matches  {string.Join(" ", hits.Take(12))}");
     }
     File.WriteAllText(Path.Combine(outDir, "characters.txt"), chars.ToString());
     Console.Write(chars);
 
-    // Wave banks
-    foreach (var xwb in Directory.EnumerateFiles(dir, "*.xwb", SearchOption.AllDirectories))
+    // 3. Audio: what codec and encryption the wave archives use, and the music cue names.
+    var audio = new StringBuilder();
+    foreach (var awbPath in c.Paths.Where(p => p.EndsWith(".awb", StringComparison.OrdinalIgnoreCase) &&
+                 (p.Contains("/bgm", StringComparison.OrdinalIgnoreCase) || p.Contains("btl", StringComparison.OrdinalIgnoreCase) || p.Contains("commu", StringComparison.OrdinalIgnoreCase))).OrderBy(p => p))
     {
-        var rel = Path.GetRelativePath(dir, xwb).Replace('\\', '/');
-        var sb = new StringBuilder();
         try
         {
-            using var bank = XactWaveBank.Open(xwb);
-            sb.AppendLine($"{rel}: bank '{bank.BankName}', {bank.Entries.Count} entries");
-            sb.AppendLine("index\tname\tcodec\tch\trate\tseconds");
-            foreach (var e in bank.Entries)
-                sb.AppendLine($"{e.Index}\t{e.Name}\t{e.Codec}\t{e.Channels}\t{e.SampleRate}\t{e.DurationSeconds:F2}");
-            var longest = bank.Entries.OrderByDescending(e => e.DurationSeconds).Take(3).Select(e => $"#{e.Index} {e.DurationSeconds:F0}s");
-            Console.WriteLine($"{rel}: {bank.Entries.Count} entries, longest {string.Join(", ", longest)}");
+            var row = Sheets.GameFiles.FirstOrDefault(r => r.Path.EndsWith("|" + awbPath, StringComparison.OrdinalIgnoreCase));
+            var (cpk, entry) = FindEntry(c, awbPath);
+            var first = cpk.ReadHead(entry, 16);
+            var afs = new Afs2(cpk.ReadHead(entry, Afs2.HeaderBytesFor(first)), entry.Offset);
+            audio.AppendLine($"== {awbPath}: {afs.Entries.Count} streams, subkey {afs.Subkey}{(row != null ? $" (sheet: {row.Id})" : "")}");
+            foreach (var e in afs.Entries.Take(5))
+                audio.AppendLine($"  #{e.Index} cue {e.CueId} {e.Size} bytes: {CriStreamInfo.Identify(cpk.ReadRange(e.Offset, (int)Math.Min(e.Size, 512)))}");
         }
-        catch (Exception e) { sb.AppendLine($"{rel}: {e.Message}"); Console.WriteLine($"{rel}: {e.Message}"); }
-        File.WriteAllText(Path.Combine(outDir, "xwb_" + rel.Replace('/', '_') + ".txt"), sb.ToString());
+        catch (Exception e) { audio.AppendLine($"== {awbPath}: {e.Message}"); }
     }
-    Console.WriteLine($"written to {outDir}");
+    foreach (var acb in new[] { "sound/adx2/bgm/snd00_bgm.acb", "sound/adx2/bgm_en/snd00_bgm.acb" })
+    {
+        var bytes = c.ReadFile(acb);
+        if (bytes == null) continue;
+        try { var t = UtfTable.Read(bytes); audio.AppendLine($"== {acb}: cue names"); DumpNames(t, audio, "  ", 0); }
+        catch (Exception e) { audio.AppendLine($"== {acb}: {e.Message}"); }
+    }
+    File.WriteAllText(Path.Combine(outDir, "audio.txt"), audio.ToString());
+    Console.WriteLine(string.Join("\n", audio.ToString().Split('\n').Where(l => l.StartsWith("==") || l.StartsWith("  #0"))));
+    Console.WriteLine($"written to {outDir} (portraits/, portraits.txt, characters.txt, audio.txt)");
     return 0;
 }
+
+static (CriCpk cpk, CpkEntry entry) FindEntry(InvestigationNightmares.Content.P4GContent c, string path) => c.Locate(path) ?? throw new Exception($"{path} not found");
 
 int Catherine(List<string> a)
 {

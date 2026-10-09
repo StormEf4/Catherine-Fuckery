@@ -29,6 +29,8 @@ public static class Tmx
         byte pixFmt = d[0x16];
         var img = new Bgra32Image(w, h);
         int pos = HeaderSize;
+        // PS2-era TMX alpha runs 0..0x80; the PC port's may already be 0..0xFF. Pick by looking at the data.
+        bool ps2Alpha = MaxAlpha(d, pos, palCount, palFmt, pixFmt, w, h) <= 0x80;
 
         uint[]? palette = null;
         if (pixFmt == PSMT8 || pixFmt == PSMT4)
@@ -38,7 +40,7 @@ public static class Tmx
             palette = new uint[colors];
             int bpp = ColorBytes(palFmt);
             for (int i = 0; i < colors; i++)
-                palette[i] = ReadColor(d.Slice(pos + i * bpp, bpp), palFmt);
+                palette[i] = ReadColor(d.Slice(pos + i * bpp, bpp), palFmt, ps2Alpha);
             pos += colors * bpp * palCount; // only the first palette is used
             if (colors == 256)
             {
@@ -63,7 +65,7 @@ public static class Tmx
                 default:
                     {
                         int bpp = ColorBytes(pixFmt);
-                        c = ReadColor(d.Slice(pos + i * bpp, bpp), pixFmt);
+                        c = ReadColor(d.Slice(pos + i * bpp, bpp), pixFmt, ps2Alpha);
                         break;
                     }
             }
@@ -80,13 +82,27 @@ public static class Tmx
         _ => throw new InvalidDataException($"unsupported TMX color format 0x{fmt:X2}"),
     };
 
+    static int MaxAlpha(ReadOnlySpan<byte> d, int pos, int palCount, byte palFmt, byte pixFmt, int w, int h)
+    {
+        int max = 0;
+        if (pixFmt is PSMT8 or PSMT4)
+        {
+            if (palFmt != PSMCT32) return 0;
+            int colors = pixFmt == PSMT8 ? 256 : 16;
+            for (int i = 0; i < colors && pos + i * 4 + 3 < d.Length; i++) max = Math.Max(max, d[pos + i * 4 + 3]);
+        }
+        else if (pixFmt == PSMCT32)
+            for (int i = 0; i < w * h && pos + i * 4 + 3 < d.Length; i += 7) max = Math.Max(max, d[pos + i * 4 + 3]);
+        return max;
+    }
+
     /// <summary>Returns 0xAARRGGBB (little-endian memory = B,G,R,A).</summary>
-    static uint ReadColor(ReadOnlySpan<byte> s, byte fmt)
+    static uint ReadColor(ReadOnlySpan<byte> s, byte fmt, bool ps2Alpha)
     {
         int r, g, b, a;
         switch (fmt)
         {
-            case PSMCT32: r = s[0]; g = s[1]; b = s[2]; a = Math.Min(255, s[3] * 2); break;
+            case PSMCT32: r = s[0]; g = s[1]; b = s[2]; a = ps2Alpha ? Math.Min(255, s[3] * 2) : s[3]; break;
             case PSMCT24: r = s[0]; g = s[1]; b = s[2]; a = 255; break;
             default:
                 {

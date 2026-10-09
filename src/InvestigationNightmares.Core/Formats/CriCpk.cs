@@ -254,6 +254,28 @@ public sealed class CriCpk : IDisposable
         return b;
     }
 
+    /// <summary>An entry's bytes, decompressed if it is stored CRILAYLA-compressed.</summary>
+    public byte[] Read(CpkEntry e)
+    {
+        var stored = ReadStored(e);
+        return Crilayla.IsCompressed(stored) ? Crilayla.Decompress(stored) : stored;
+    }
+
+    /// <summary>Read only the first bytes of an entry (headers of big audio archives).</summary>
+    public byte[] ReadHead(CpkEntry e, int count)
+    {
+        var b = new byte[Math.Min(count, e.StoredSize)];
+        lock (_s) { _s.Position = e.Offset; _s.ReadExactly(b); }
+        return b;
+    }
+
+    public byte[] ReadRange(long absoluteOffset, int count)
+    {
+        var b = new byte[count];
+        lock (_s) { _s.Position = absoluteOffset; _s.ReadExactly(b); }
+        return b;
+    }
+
     public void Dispose() => _s.Dispose();
 
     /// <summary>Build a minimal TOC-based CPK (tests).</summary>

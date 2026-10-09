@@ -1,6 +1,6 @@
 {
   "sheet": "game_files",
-  "description": "Every file or folder the mashup reads from either game. Paths are relative to that game's install folder. Nothing listed here is ever shipped; it is read from the player's own copy at run time.",
+  "description": "Every file or folder the mashup reads from either game. Paths are relative to that game's install folder; 'a.cpk|inner/path' names a file inside a CRI archive, and 'a.cpk;b.cpk' searches archives in order. Nothing listed here is ever shipped; it is read from the player's own copy at run time.",
   "columns": {
     "id": {
       "type": "id"
@@ -26,9 +26,8 @@
       "values": [
         "folder",
         "exe",
-        "dwpack",
-        "xact_wavebank",
-        "loose_any"
+        "cri_cpk",
+        "cri_awb"
       ]
     },
     "purpose": {
@@ -43,51 +42,41 @@
       "install_dir_name": "Persona 4 Golden",
       "path": "P4G.exe",
       "format": "exe",
-      "purpose": "Proves the folder found through Steam is really Persona 4 Golden (64-bit PC release).",
-      "_unverified": [
-        "install_dir_name",
-        "path"
-      ],
-      "_notes": "App id 1113000 is the Steam store id. Folder and exe name come from community guides, not from an install."
+      "purpose": "Proves the folder is Persona 4 Golden (the 64-bit Steam release).",
+      "_notes": "Verified from the player's install: Persona 4 Golden/P4G.exe (436 MB, 64-bit) next to data.cpk and steam_api64.dll."
     },
     {
-      "id": "p4g_data_pacs",
+      "id": "p4g_data_cpks",
       "game": "p4g",
       "steam_appid": 1113000,
       "install_dir_name": "Persona 4 Golden",
-      "path": "data*.pac",
-      "format": "dwpack",
-      "purpose": "PreApp Partners DW_PACK archives holding bustup portraits (and message scripts).",
-      "_unverified": [
-        "path"
-      ],
-      "_notes": "Format from tge-was-taken/preappfile and Sewer56/p4gpc.modloader (DW_PACK header + 0x120-byte entries + chunked Huffman). File glob not yet checked on an install. The player's install has no .pac at the top level (likely the 64-bit release, which uses other archives): waiting on `recon list` of the P4G folder."
+      "path": "data_e.cpk;data.cpk",
+      "format": "cri_cpk",
+      "purpose": "CRI archives holding P4G's files; English overrides in data_e.cpk are searched first. Portraits are bustup/b<character>_<expression>_<frame>.bin (CRILAYLA-compressed).",
+      "_notes": "Verified from the player's install: data.cpk (8.3 GB, 47,178 files) holds all 1,068 bustups; data_e.cpk holds English overrides."
     },
     {
       "id": "p4g_voice_bank",
       "game": "p4g",
       "steam_appid": 1113000,
       "install_dir_name": "Persona 4 Golden",
-      "path": "SND/ROOT.xwb",
-      "format": "xact_wavebank",
-      "purpose": "XACT wave bank with the cast's voice clips (battle barks, event lines).",
+      "path": "data.cpk|sound/adx2/en/btlmem.awb",
+      "format": "cri_awb",
+      "purpose": "English battle voices of the party (Persona summons, 'Persona!' barks) as an ADX2 wave archive.",
       "_unverified": [
         "path"
       ],
-      "_notes": "A voice-swap mod replaces SND/ROOT.xwb; p4gpc.modloader redirects XACT banks. Whether ROOT holds voices or BGM is unconfirmed."
+      "_notes": "The archive exists (87.6 MB, AFS2). That it holds the party's battle barks is inferred from its name (btlmem = battle members)."
     },
     {
       "id": "p4g_bgm_bank",
       "game": "p4g",
       "steam_appid": 1113000,
       "install_dir_name": "Persona 4 Golden",
-      "path": "SND/BGM.xwb",
-      "format": "xact_wavebank",
-      "purpose": "XACT wave bank with P4G's music.",
-      "_unverified": [
-        "path"
-      ],
-      "_notes": "Guess. recon lists every *.xwb under SND with entry counts and durations; pick the bank whose entries are minutes long."
+      "path": "data.cpk|sound/adx2/bgm/snd00_bgm.awb",
+      "format": "cri_awb",
+      "purpose": "P4G's music as an ADX2 wave archive (cue names in snd00_bgm.acb next to it).",
+      "_notes": "Verified from the player's install: sound/adx2/bgm/snd00_bgm.awb (298 MB, AFS2) + snd00_bgm.acb."
     },
     {
       "id": "cc_exe",

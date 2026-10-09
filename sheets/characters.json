@@ -1,15 +1,34 @@
 {
   "sheet": "characters",
-  "description": "Investigation Team members (and Shadows) who appear in Vincent's nightmares. Portraits and voices come from the player's Persona 4 Golden install.",
+  "description": "Investigation Team members (and Shadows) who appear in Vincent's nightmares. Portraits and voices come from the player's Persona 4 Golden install. bustup_glob matches portrait files inside the CPKs; expression N in dialogue is the Nth match in name order.",
   "columns": {
-    "id": { "type": "id" },
-    "name": { "type": "string" },
-    "persona": { "type": "string" },
-    "p4g_char_id": { "type": "int" },
-    "bustup_source": { "type": "ref", "sheet": "game_files" },
-    "bustup_glob": { "type": "string" },
-    "voice_source": { "type": "ref", "sheet": "game_files" },
-    "nameplate_color": { "type": "string" }
+    "id": {
+      "type": "id"
+    },
+    "name": {
+      "type": "string"
+    },
+    "persona": {
+      "type": "string"
+    },
+    "p4g_char_id": {
+      "type": "int"
+    },
+    "bustup_source": {
+      "type": "ref",
+      "sheet": "game_files"
+    },
+    "bustup_glob": {
+      "type": "string",
+      "nullable": true
+    },
+    "voice_source": {
+      "type": "ref",
+      "sheet": "game_files"
+    },
+    "nameplate_color": {
+      "type": "string"
+    }
   },
   "rows": [
     {
@@ -17,56 +36,70 @@
       "name": "Yu Narukami",
       "persona": "Izanagi",
       "p4g_char_id": 1,
-      "bustup_source": "p4g_data_pacs",
-      "bustup_glob": "bustup/*001_*",
+      "bustup_source": "p4g_data_cpks",
+      "bustup_glob": null,
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#5A6E8C",
-      "_unverified": ["p4g_char_id", "bustup_glob"]
+      "_notes": "P4G gives the protagonist no dialogue portrait (data.cpk has no bustup/b1_*), so Yu speaks with his name plate only, as in P4G."
     },
     {
       "id": "yosuke",
       "name": "Yosuke Hanamura",
       "persona": "Jiraiya",
       "p4g_char_id": 2,
-      "bustup_source": "p4g_data_pacs",
-      "bustup_glob": "bustup/*002_*",
+      "bustup_source": "p4g_data_cpks",
+      "bustup_glob": "bustup/b2_?_1.bin",
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#E0802A",
-      "_unverified": ["p4g_char_id", "bustup_glob"]
+      "_unverified": [
+        "p4g_char_id",
+        "bustup_glob"
+      ],
+      "_notes": "Character number from P4's party order (2 Yosuke, 3 Chie, 8 Teddie); bustup/bN files exist for it. Expressions 1-9 with frame 1 are the talking set. Confirm with recon's PNGs."
     },
     {
       "id": "chie",
       "name": "Chie Satonaka",
       "persona": "Tomoe",
       "p4g_char_id": 3,
-      "bustup_source": "p4g_data_pacs",
-      "bustup_glob": "bustup/*003_*",
+      "bustup_source": "p4g_data_cpks",
+      "bustup_glob": "bustup/b3_?_1.bin",
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#4FA34A",
-      "_unverified": ["p4g_char_id", "bustup_glob"]
+      "_unverified": [
+        "p4g_char_id",
+        "bustup_glob"
+      ],
+      "_notes": "Character number from P4's party order (2 Yosuke, 3 Chie, 8 Teddie); bustup/bN files exist for it. Expressions 1-9 with frame 1 are the talking set. Confirm with recon's PNGs."
     },
     {
       "id": "teddie",
       "name": "Teddie",
       "persona": "Kintoki-Douji",
       "p4g_char_id": 8,
-      "bustup_source": "p4g_data_pacs",
-      "bustup_glob": "bustup/*008_*",
+      "bustup_source": "p4g_data_cpks",
+      "bustup_glob": "bustup/b8_?_1.bin",
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#D9473B",
-      "_unverified": ["p4g_char_id", "bustup_glob"]
+      "_unverified": [
+        "p4g_char_id",
+        "bustup_glob"
+      ],
+      "_notes": "Character number from P4's party order (2 Yosuke, 3 Chie, 8 Teddie); bustup/bN files exist for it. Expressions 1-9 with frame 1 are the talking set. Confirm with recon's PNGs."
     },
     {
       "id": "shadow_yosuke",
       "name": "Shadow Yosuke",
       "persona": "Shadow",
       "p4g_char_id": 2,
-      "bustup_source": "p4g_data_pacs",
-      "bustup_glob": "bustup/*002_*shadow*",
+      "bustup_source": "p4g_data_cpks",
+      "bustup_glob": "bustup/b2_5?_0.bin",
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#F2D21B",
-      "_unverified": ["bustup_glob"],
-      "_notes": "Shadow selves reuse the owner's portrait set with yellow eyes in P4G; the exact variant file is unknown."
+      "_unverified": [
+        "bustup_glob"
+      ],
+      "_notes": "Guess: Yosuke's single-frame 50-series (b2_50_0..b2_53_0). recon exports Yosuke's portraits as PNGs to confirm."
     }
   ]
 }

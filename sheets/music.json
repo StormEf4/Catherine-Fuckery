@@ -39,7 +39,7 @@
       "_unverified": [
         "wave_index"
       ],
-      "_notes": "Plays during the Midnight Channel intro, over Catherine's silence before Night 1. Index: find with `recon` (longest-looping tracks listed with durations)."
+      "_notes": "Plays during the Midnight Channel intro, over Catherine's silence before Night 1. wave_index = stream index in snd00_bgm.awb; recon lists the cue names from snd00_bgm.acb."
     },
     {
       "id": "bgm_ill_face_myself_battle",
@@ -53,7 +53,7 @@
         "wave_index",
         "replaces_cc_file"
       ],
-      "_notes": "Catherine keeps all music in data/sound/bgm.cpk (CRI), not one file per track, so the WAV redirect can't apply. Until the CPK route lands, the mod plays the track itself on the boss climb."
+      "_notes": "Catherine keeps all music in data/sound/bgm.cpk (CRI), not one file per track, so the WAV redirect can't apply. Until the CPK route lands, the mod plays the track itself on the boss climb. wave_index = stream index in snd00_bgm.awb; recon lists the cue names from snd00_bgm.acb."
     }
   ]
 }

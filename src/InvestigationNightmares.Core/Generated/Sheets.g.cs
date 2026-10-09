@@ -10,13 +10,13 @@ public sealed record BindingsRow(string Id, string Owner, string Action, string 
 /// <summary>Shadow bosses. The boss climb gets the Shadow's name plate, portrait, voice and P4G boss music; the boss's 3D model stays Catherine's own in this version.</summary>
 public sealed record BossesRow(string Id, string Stage, string Clear, string CcBossName, string Shadow, string Music, string IntroLine, string[] Taunts, double TauntIntervalS, string DefeatLine, string[] Unverified);
 
-/// <summary>Investigation Team members (and Shadows) who appear in Vincent's nightmares. Portraits and voices come from the player's Persona 4 Golden install.</summary>
-public sealed record CharactersRow(string Id, string Name, string Persona, int P4gCharId, string BustupSource, string BustupGlob, string VoiceSource, string NameplateColor, string[] Unverified);
+/// <summary>Investigation Team members (and Shadows) who appear in Vincent's nightmares. Portraits and voices come from the player's Persona 4 Golden install. bustup_glob matches portrait files inside the CPKs; expression N in dialogue is the Nth match in name order.</summary>
+public sealed record CharactersRow(string Id, string Name, string Persona, int P4gCharId, string BustupSource, string? BustupGlob, string VoiceSource, string NameplateColor, string[] Unverified);
 
 /// <summary>Lines the Investigation Team speaks in Vincent's nightmares. Text is written for this crossover; portraits and the voice bark that plays with each line are the cast's real P4G assets from the player's install (bark_index into the speaker's voice_source bank, null = no bark).</summary>
 public sealed record DialogueRow(string Id, string Speaker, string Text, int? BarkIndex, int Expression, string[] Unverified);
 
-/// <summary>Every file or folder the mashup reads from either game. Paths are relative to that game's install folder. Nothing listed here is ever shipped; it is read from the player's own copy at run time.</summary>
+/// <summary>Every file or folder the mashup reads from either game. Paths are relative to that game's install folder; 'a.cpk|inner/path' names a file inside a CRI archive, and 'a.cpk;b.cpk' searches archives in order. Nothing listed here is ever shipped; it is read from the player's own copy at run time.</summary>
 public sealed record GameFilesRow(string Id, string Game, int SteamAppid, string InstallDirName, string Path, string Format, string Purpose, string[] Unverified);
 
 /// <summary>Every place the mod hooks Catherine's process. Only public Windows/DirectX entry points are used: no addresses inside Catherine.exe, so nothing depends on the game's version.</summary>
@@ -62,11 +62,11 @@ public static class Sheets
 
     public static readonly IReadOnlyList<CharactersRow> Characters = new CharactersRow[]
     {
-        new("yu", "Yu Narukami", "Izanagi", 1, "p4g_data_pacs", "bustup/*001_*", "p4g_voice_bank", "#5A6E8C", new string[] { "p4g_char_id", "bustup_glob" }),
-        new("yosuke", "Yosuke Hanamura", "Jiraiya", 2, "p4g_data_pacs", "bustup/*002_*", "p4g_voice_bank", "#E0802A", new string[] { "p4g_char_id", "bustup_glob" }),
-        new("chie", "Chie Satonaka", "Tomoe", 3, "p4g_data_pacs", "bustup/*003_*", "p4g_voice_bank", "#4FA34A", new string[] { "p4g_char_id", "bustup_glob" }),
-        new("teddie", "Teddie", "Kintoki-Douji", 8, "p4g_data_pacs", "bustup/*008_*", "p4g_voice_bank", "#D9473B", new string[] { "p4g_char_id", "bustup_glob" }),
-        new("shadow_yosuke", "Shadow Yosuke", "Shadow", 2, "p4g_data_pacs", "bustup/*002_*shadow*", "p4g_voice_bank", "#F2D21B", new string[] { "bustup_glob" }),
+        new("yu", "Yu Narukami", "Izanagi", 1, "p4g_data_cpks", null, "p4g_voice_bank", "#5A6E8C", new string[] {  }),
+        new("yosuke", "Yosuke Hanamura", "Jiraiya", 2, "p4g_data_cpks", "bustup/b2_?_1.bin", "p4g_voice_bank", "#E0802A", new string[] { "p4g_char_id", "bustup_glob" }),
+        new("chie", "Chie Satonaka", "Tomoe", 3, "p4g_data_cpks", "bustup/b3_?_1.bin", "p4g_voice_bank", "#4FA34A", new string[] { "p4g_char_id", "bustup_glob" }),
+        new("teddie", "Teddie", "Kintoki-Douji", 8, "p4g_data_cpks", "bustup/b8_?_1.bin", "p4g_voice_bank", "#D9473B", new string[] { "p4g_char_id", "bustup_glob" }),
+        new("shadow_yosuke", "Shadow Yosuke", "Shadow", 2, "p4g_data_cpks", "bustup/b2_5?_0.bin", "p4g_voice_bank", "#F2D21B", new string[] { "bustup_glob" }),
     };
 
     public static readonly IReadOnlyList<DialogueRow> Dialogue = new DialogueRow[]
@@ -88,10 +88,10 @@ public static class Sheets
 
     public static readonly IReadOnlyList<GameFilesRow> GameFiles = new GameFilesRow[]
     {
-        new("p4g_exe", "p4g", 1113000, "Persona 4 Golden", "P4G.exe", "exe", "Proves the folder found through Steam is really Persona 4 Golden (64-bit PC release).", new string[] { "install_dir_name", "path" }),
-        new("p4g_data_pacs", "p4g", 1113000, "Persona 4 Golden", "data*.pac", "dwpack", "PreApp Partners DW_PACK archives holding bustup portraits (and message scripts).", new string[] { "path" }),
-        new("p4g_voice_bank", "p4g", 1113000, "Persona 4 Golden", "SND/ROOT.xwb", "xact_wavebank", "XACT wave bank with the cast's voice clips (battle barks, event lines).", new string[] { "path" }),
-        new("p4g_bgm_bank", "p4g", 1113000, "Persona 4 Golden", "SND/BGM.xwb", "xact_wavebank", "XACT wave bank with P4G's music.", new string[] { "path" }),
+        new("p4g_exe", "p4g", 1113000, "Persona 4 Golden", "P4G.exe", "exe", "Proves the folder is Persona 4 Golden (the 64-bit Steam release).", new string[] {  }),
+        new("p4g_data_cpks", "p4g", 1113000, "Persona 4 Golden", "data_e.cpk;data.cpk", "cri_cpk", "CRI archives holding P4G's files; English overrides in data_e.cpk are searched first. Portraits are bustup/b<character>_<expression>_<frame>.bin (CRILAYLA-compressed).", new string[] {  }),
+        new("p4g_voice_bank", "p4g", 1113000, "Persona 4 Golden", "data.cpk|sound/adx2/en/btlmem.awb", "cri_awb", "English battle voices of the party (Persona summons, 'Persona!' barks) as an ADX2 wave archive.", new string[] { "path" }),
+        new("p4g_bgm_bank", "p4g", 1113000, "Persona 4 Golden", "data.cpk|sound/adx2/bgm/snd00_bgm.awb", "cri_awb", "P4G's music as an ADX2 wave archive (cue names in snd00_bgm.acb next to it).", new string[] {  }),
         new("cc_exe", "catherine", 893180, "CatherineClassic", "Catherine.exe", "exe", "The process the Reloaded-II mod loads into.", new string[] {  }),
         new("cc_sound_dir", "catherine", 893180, "CatherineClassic", "data/sound", "folder", "Loose music/sound files; boss track is redirected here.", new string[] {  }),
         new("cc_puzzle_dir", "catherine", 893180, "CatherineClassic", "data/puzzle", "folder", "Stage data; which stage file opens tells the mod where Vincent is.", new string[] {  }),

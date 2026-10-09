@@ -29,22 +29,20 @@ public static class ImageExtractor
             foreach (var (n, data) in files) Walk(data, name + "/" + n, found, problems, depth + 1);
             return;
         }
-        // Unknown wrapper: look for embedded pictures.
+        // Unknown wrapper: look for embedded pictures at any byte offset.
         int hits = 0;
-        for (int i = 0; i + 128 <= d.Length && hits < 64; i += 4)
+        for (int from = 0; from < d.Length && hits < 64;)
         {
-            if (d[i] == (byte)'D' && Dds.IsDds(d[i..]))
-            {
-                hits++;
-                var slice = d[i..].ToArray();
-                TryAdd(() => Dds.Decode(slice), $"{name}@{i:X}", found, problems);
-            }
-            else if (i >= 8 && d[i] == (byte)'T' && Tmx.IsTmx(d[(i - 8)..]))
-            {
-                hits++;
-                var slice = d[(i - 8)..].ToArray();
-                TryAdd(() => Tmx.Decode(slice), $"{name}@{i - 8:X}", found, problems);
-            }
+            int tmx = d[from..].IndexOf("TMX0"u8), dds = d[from..].IndexOf("DDS "u8);
+            if (tmx < 0 && dds < 0) break;
+            bool isTmx = tmx >= 0 && (dds < 0 || tmx < dds);
+            int at = from + (isTmx ? tmx - 8 : dds);
+            from += (isTmx ? tmx : dds) + 4;
+            if (at < 0) continue;
+            var slice = d[at..].ToArray();
+            if (isTmx ? !Tmx.IsTmx(slice) : !Dds.IsDds(slice)) continue;
+            hits++;
+            TryAdd(isTmx ? () => Tmx.Decode(slice) : () => Dds.Decode(slice), $"{name}@{at:X}", found, problems);
         }
         if (hits == 0) problems?.Add($"{name}: no TMX/DDS picture inside ({d.Length} bytes, starts {Convert.ToHexString(d[..Math.Min(16, d.Length)])})");
     }

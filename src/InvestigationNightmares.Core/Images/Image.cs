@@ -38,6 +38,33 @@ public sealed class Bgra32Image
         return maxX < 0 ? (0, 0, Width, Height) : (minX, minY, maxX - minX + 1, maxY - minY + 1);
     }
 
+    public Bgra32Image Crop(int x, int y, int w, int h)
+    {
+        var o = new byte[w * h * 4];
+        for (int row = 0; row < h; row++)
+            Buffer.BlockCopy(Pixels, ((y + row) * Width + x) * 4, o, row * w * 4, w * 4);
+        return new Bgra32Image(w, h, o);
+    }
+
+    /// <summary>Box-filtered shrink by an integer factor (previews).</summary>
+    public Bgra32Image Downscale(int factor)
+    {
+        if (factor <= 1) return this;
+        int w = Math.Max(1, Width / factor), h = Math.Max(1, Height / factor);
+        var o = new byte[w * h * 4];
+        for (int y = 0; y < h; y++)
+            for (int x = 0; x < w; x++)
+                for (int c = 0; c < 4; c++)
+                {
+                    int sum = 0;
+                    for (int dy = 0; dy < factor; dy++)
+                        for (int dx = 0; dx < factor; dx++)
+                            sum += Pixels[((y * factor + dy) * Width + x * factor + dx) * 4 + c];
+                    o[(y * w + x) * 4 + c] = (byte)(sum / (factor * factor));
+                }
+        return new Bgra32Image(w, h, o);
+    }
+
     public byte[] ToPng()
     {
         using var ms = new MemoryStream();

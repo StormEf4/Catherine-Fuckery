@@ -20,15 +20,15 @@ The Persona 4 Investigation Team invades Vincent's nightmares in Catherine Class
 This is a content port (universal-modder's "Pattern 1"), with the guest's assets read at run time:
 
 - **The host is Catherine Classic** (Gamebryo, DirectX 9, loose files under `data/`). Mod loader: Reloaded-II, which the Catherine modding scene already uses.
-- **The guest is Persona 4 Golden PC.** Its files are read in place: DW_PACK archives for portraits and XACT wave banks for voices and music. P4G never runs.
+- **The guest is Persona 4 Golden PC.** Its files are read in place from the 64-bit release's CRI archives: `data.cpk` holds the portraits (`bustup/*.bin`, CRILAYLA-compressed) and the ADX2 voice and music archives (`sound/adx2/...`). P4G never runs.
 - **No code inside `Catherine.exe` is hooked or patched.** Every hook is a public Windows or DirectX entry point (`sheets/hooks.json`), so the mod doesn't depend on Catherine's exe version. Knowing where Vincent is comes from which loose files Catherine opens (`sheets/triggers.json`). Powers work through the game clock and the controller, not through Catherine's internal puzzle state.
 
 ## What each P4G piece becomes
 
 | From P4G | In Catherine |
 |---|---|
-| Bustup portraits (`bustup/*` in the DW_PACK archives) | Dialogue portraits, the Team TV menu, Persona cut-ins, the boss's dialogue box |
-| Voice clips (XACT bank) | A bark played with each line and with each Persona cast |
+| Bustup portraits (`bustup/bN_E_F.bin` in `data.cpk`) | Dialogue portraits, the Team TV menu, Persona cut-ins, the boss's dialogue box |
+| Voice clips (`sound/adx2/en/btlmem.awb`) | A bark played with each line and with each Persona cast |
 | *Backside of the TV* | The Midnight Channel intro |
 | *I'll Face Myself -Battle-* | The Shadow boss climb. Catherine plays it from its own file if that file is a PCM WAV, otherwise the mod plays it over the scene |
 | Izanagi's Sukunda, Jiraiya's Garu | Clock slow-down; auto-pull of three blocks |

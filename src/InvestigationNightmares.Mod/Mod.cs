@@ -77,7 +77,7 @@ public sealed class Mod : IMod
                     c.Preload();
                     PrepareMusicRedirects(c, gameRoot);
                     _content = c;
-                    _log.Info($"P4G content ready: {c.PackCount} archives, {c.Banks.Count()} wave banks");
+                    _log.Info($"P4G content ready: {c.ArchiveCount} archives, {c.FileCount} files");
                     foreach (var p in c.Problems.Distinct()) _log.Warn("P4G: " + p);
                 }
                 catch (Exception e) { _log.Error($"reading P4G failed: {e.Message}"); }
