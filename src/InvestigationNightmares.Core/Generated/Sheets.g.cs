@@ -11,7 +11,7 @@ public sealed record BindingsRow(string Id, string Owner, string Action, string 
 public sealed record BossesRow(string Id, string Stage, string Clear, string CcBossName, string Shadow, string Music, string IntroLine, string[] Taunts, double TauntIntervalS, string DefeatLine, string[] Unverified);
 
 /// <summary>Investigation Team members (and Shadows) who appear in Vincent's nightmares. Portraits and voices come from the player's Persona 4 Golden install. bustup_glob matches portrait files inside the CPKs; expression N in dialogue is the Nth match in name order.</summary>
-public sealed record CharactersRow(string Id, string Name, string Persona, int P4gCharId, string BustupSource, string? BustupGlob, string VoiceSource, string NameplateColor, string[] Unverified);
+public sealed record CharactersRow(string Id, string Name, string Persona, int P4gCharId, string BustupSource, string? BustupGlob, string PortraitEffect, string? CutinImage, string VoiceSource, string NameplateColor, string[] Unverified);
 
 /// <summary>Lines the Investigation Team speaks in Vincent's nightmares. Text is written for this crossover; portraits and the voice bark that plays with each line are the cast's real P4G assets from the player's install (bark_index into the speaker's voice_source bank, null = no bark).</summary>
 public sealed record DialogueRow(string Id, string Speaker, string Text, int? BarkIndex, int Expression, string[] Unverified);
@@ -62,11 +62,11 @@ public static class Sheets
 
     public static readonly IReadOnlyList<CharactersRow> Characters = new CharactersRow[]
     {
-        new("yu", "Yu Narukami", "Izanagi", 1, "p4g_data_cpks", null, "p4g_voice_bank", "#5A6E8C", new string[] {  }),
-        new("yosuke", "Yosuke Hanamura", "Jiraiya", 2, "p4g_data_cpks", "bustup/b2_?_1.bin", "p4g_voice_bank", "#E0802A", new string[] { "p4g_char_id", "bustup_glob" }),
-        new("chie", "Chie Satonaka", "Tomoe", 3, "p4g_data_cpks", "bustup/b3_?_1.bin", "p4g_voice_bank", "#4FA34A", new string[] { "p4g_char_id", "bustup_glob" }),
-        new("teddie", "Teddie", "Kintoki-Douji", 8, "p4g_data_cpks", "bustup/b8_?_1.bin", "p4g_voice_bank", "#D9473B", new string[] { "p4g_char_id", "bustup_glob" }),
-        new("shadow_yosuke", "Shadow Yosuke", "Shadow", 2, "p4g_data_cpks", "bustup/b2_5?_0.bin", "p4g_voice_bank", "#F2D21B", new string[] { "bustup_glob" }),
+        new("yu", "Yu Narukami", "Izanagi", 1, "p4g_data_cpks", null, "none", "card/persona/i_prc001.tmx", "p4g_voice_bank", "#5A6E8C", new string[] {  }),
+        new("yosuke", "Yosuke Hanamura", "Jiraiya", 2, "p4g_data_cpks", "bustup/b2_?_1.bin", "none", "tex2/battle/cutin/syoukan/SYKN_2/001/syoukan_moji.dds", "p4g_voice_bank", "#E0802A", new string[] { "cutin_image" }),
+        new("chie", "Chie Satonaka", "Tomoe", 3, "p4g_data_cpks", "bustup/b3_?_1.bin", "none", "tex2/battle/cutin/syoukan/SYKN_3/001/syoukan_moji.dds", "p4g_voice_bank", "#4FA34A", new string[] { "cutin_image" }),
+        new("teddie", "Teddie", "Kintoki-Douji", 8, "p4g_data_cpks", "bustup/b8_?_0.bin", "none", "tex2/battle/cutin/syoukan/SYKN_8/001/syoukan_moji.dds", "p4g_voice_bank", "#D9473B", new string[] { "cutin_image" }),
+        new("shadow_yosuke", "Shadow Yosuke", "Shadow", 2, "p4g_data_cpks", "bustup/b2_?_1.bin", "shadow", null, "p4g_voice_bank", "#F2D21B", new string[] {  }),
     };
 
     public static readonly IReadOnlyList<DialogueRow> Dialogue = new DialogueRow[]

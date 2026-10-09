@@ -37,7 +37,7 @@ If Persona 4 Golden isn't a Steam install, set `P4GPath` in `%LOCALAPPDATA%\Inve
 This version was built and tested on Linux, without either game. What that covers:
 
 - **Verified by tests:** the readers for CRI archives (CPK, CRILAYLA compression, @UTF tables, AFS2 wave archives), the portraits and the older P4G formats; the Steam library finder; the whole Night 1 story flow (intro, landing talks, power charges, the boss and its taunts); the clock scaling; Garu's pull timing; and the controller hotkey handling. That is 40 C# tests plus 6 sheet tests. Content loading was also tested end to end against a synthetic P4G folder laid out the way the sheets describe.
-- **Read from a real install so far:** both games' file layouts. Catherine's stage, boss and landing files, and P4G's 64-bit archives (portraits in `data.cpk` as `bustup/b<character>_<expression>_<frame>.bin`, music and voices as ADX2 `.awb` archives). Playing P4G's voices and music still needs their codec (most likely HCA), which comes next.
+- **Read from a real install so far:** both games' file layouts. Catherine's stage, boss and landing files, and P4G's 64-bit archives (portraits in `data.cpk` as `bustup/b<character>_<expression>_<frame>.bin`, music and voices as ADX2 `.awb` archives). Voices are ADX and music is unencrypted HCA; both decode with VGAudio. Which clip is which still has to be picked by ear (`recon listen`).
 - **Not yet verified:** the sheet cells `python3 tools/preflight.py` lists (run `python3 tools/preflight.py` to list them). They cover which P4G files hold each portrait, voice clip and song, which Catherine file opens for each stage, Catherine's grab button, and how Catherine reads its clock and controller. Until they're checked on a real install, expect things like missing portraits or a trigger that doesn't fire.
 
 The mod writes a log to `%LOCALAPPDATA%\InvestigationNightmares\log.txt`. Every problem names the sheet cell to fix, and the log also lists each file Catherine opens, which is how the stage triggers get filled in.
@@ -50,6 +50,7 @@ On a PC with both games installed:
 recon p4g          # portrait previews per character number and persona card, the audio codec, music cue names
 recon catherine    # lists Catherine's data files and their formats
 recon list <folder># lists any folder and looks inside CRI .cpk/.acb/.csb archives
+recon listen       # exports P4G's songs (30 s previews) and English battle voices as numbered WAVs to pick by ear
 recon sheets       # what's still unverified
 ```
 
@@ -72,4 +73,5 @@ See [docs/DESIGN.md](docs/DESIGN.md) for the design notes and the modding route.
 - *Persona 4 Golden* and *Catherine Classic* are © ATLUS / SEGA. This mod contains none of their files; it reads your own installs.
 - The P4G PC archive and sound bank layouts were learned from [tge-was-taken/preappfile](https://github.com/tge-was-taken/preappfile) and [Sewer56/p4gpc.modloader](https://github.com/Sewer56/p4gpc.modloader). The readers here are independent implementations.
 - Catherine Classic's folder layout comes from [Shasties/catherine_character_mods](https://github.com/Shasties/catherine_character_mods).
+- Audio decoding (ADX, HCA): [VGAudio](https://github.com/Thealexbarney/VGAudio) by Alex Barney, MIT License, bundled as `VGAudio.dll`.
 - Mod loader: [Reloaded-II](https://github.com/Reloaded-Project/Reloaded-II) by Sewer56.

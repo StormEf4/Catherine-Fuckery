@@ -46,6 +46,30 @@ public sealed class Bgra32Image
         return new Bgra32Image(w, h, o);
     }
 
+    /// <summary>
+    /// P4's Shadow look on a real portrait: darkened and gold-tinted, with a glowing gold rim where the
+    /// figure meets transparency.
+    /// </summary>
+    public Bgra32Image ShadowTint()
+    {
+        var o = new byte[Pixels.Length];
+        for (int y = 0; y < Height; y++)
+            for (int x = 0; x < Width; x++)
+            {
+                int i = (y * Width + x) * 4;
+                int a = Pixels[i + 3];
+                int lum = (Pixels[i] * 29 + Pixels[i + 1] * 150 + Pixels[i + 2] * 77) >> 8;
+                bool rim = a > 32 && (x == 0 || y == 0 || x == Width - 1 || y == Height - 1 ||
+                    Pixels[i - 4 + 3] < 32 || Pixels[i + 4 + 3] < 32 || Pixels[i - Width * 4 + 3] < 32 || Pixels[i + Width * 4 + 3] < 32);
+                if (rim) { o[i] = 40; o[i + 1] = 210; o[i + 2] = 255; o[i + 3] = (byte)a; continue; }
+                o[i] = (byte)(lum * 20 / 100);          // B
+                o[i + 1] = (byte)(lum * 55 / 100 + 10); // G
+                o[i + 2] = (byte)(lum * 70 / 100 + 25); // R
+                o[i + 3] = (byte)a;
+            }
+        return new Bgra32Image(Width, Height, o);
+    }
+
     /// <summary>Box-filtered shrink by an integer factor (previews).</summary>
     public Bgra32Image Downscale(int factor)
     {

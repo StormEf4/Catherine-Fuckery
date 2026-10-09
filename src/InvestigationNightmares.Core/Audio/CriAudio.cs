@@ -40,6 +40,35 @@ public sealed class Afs2
         Entries = list;
     }
 
+    /// <summary>Build an AFS2 archive (tests and tools): ids are 0..n-1, offsets 4 bytes, alignment 32.</summary>
+    public static byte[] Build(IReadOnlyList<byte[]> streams)
+    {
+        const int align = 32;
+        int n = streams.Count;
+        int headerLen = 16 + n * 2 + (n + 1) * 4;
+        var offsets = new long[n + 1];
+        long pos = headerLen;
+        for (int i = 0; i < n; i++)
+        {
+            offsets[i] = pos;
+            long start = (pos + align - 1) / align * align;
+            pos = start + streams[i].Length;
+        }
+        offsets[n] = pos;
+        var ms = new MemoryStream();
+        var w = new BinaryWriter(ms);
+        w.Write("AFS2"u8); w.Write(new byte[] { 2, 4, 2, 0 }); w.Write(n); w.Write((ushort)align); w.Write((ushort)0);
+        for (int i = 0; i < n; i++) w.Write((ushort)i);
+        foreach (var o in offsets) w.Write((uint)o);
+        for (int i = 0; i < n; i++)
+        {
+            long start = (offsets[i] + align - 1) / align * align;
+            while (ms.Length < start) w.Write((byte)0);
+            w.Write(streams[i]);
+        }
+        return ms.ToArray();
+    }
+
     /// <summary>How many header bytes to read to parse an AFS2 with this many entries (upper bound).</summary>
     public static int HeaderBytesFor(ReadOnlySpan<byte> first16)
     {
@@ -90,5 +119,41 @@ public sealed record CriStreamInfo(string Codec, int Channels, int SampleRate, i
             return new CriStreamInfo($"ADX type {d[4]}", d[7], (int)BinaryPrimitives.ReadUInt32BigEndian(d[8..]), 0, 0);
         if (d.Length >= 4 && d[..4].SequenceEqual("RIFF"u8)) return new CriStreamInfo("RIFF/WAV", 0, 0, 0, 0);
         return new CriStreamInfo("unknown " + Convert.ToHexString(d[..Math.Min(8, d.Length)]), 0, 0, 0, 0);
+    }
+}
+
+/// <summary>Decodes CRI ADX and HCA streams to 16-bit PCM using VGAudio (MIT, Alex Barney).</summary>
+public static class CriDecoder
+{
+    public static Pcm16 Decode(byte[] stream)
+    {
+        var info = CriStreamInfo.Identify(stream);
+        VGAudio.Formats.AudioData audio = info.Codec switch
+        {
+            "HCA" when info.CipherType == 0 => new VGAudio.Containers.Hca.HcaReader().Read(stream),
+            "HCA" => throw new NotSupportedException($"encrypted HCA (cipher {info.CipherType})"),
+            _ when info.Codec.StartsWith("ADX") => new VGAudio.Containers.Adx.AdxReader().Read(stream),
+            _ => throw new NotSupportedException($"{info.Codec} audio"),
+        };
+        var pcm = audio.GetFormat<VGAudio.Formats.Pcm16.Pcm16Format>();
+        int ch = pcm.Channels.Length, frames = pcm.Channels[0].Length;
+        var inter = new short[ch * frames];
+        for (int f = 0; f < frames; f++)
+            for (int c = 0; c < ch; c++) inter[f * ch + c] = pcm.Channels[c][f];
+        return new Pcm16(ch, pcm.SampleRate, inter);
+    }
+
+    /// <summary>Encode PCM as ADX or HCA (test fixtures).</summary>
+    public static byte[] Encode(Pcm16 pcm, bool hca)
+    {
+        int frames = pcm.Samples.Length / pcm.Channels;
+        var chans = new short[pcm.Channels][];
+        for (int c = 0; c < pcm.Channels; c++)
+        {
+            chans[c] = new short[frames];
+            for (int f = 0; f < frames; f++) chans[c][f] = pcm.Samples[f * pcm.Channels + c];
+        }
+        var fmt = new VGAudio.Formats.Pcm16.Pcm16Format(chans, pcm.SampleRate);
+        return hca ? new VGAudio.Containers.Hca.HcaWriter().GetFile(fmt) : new VGAudio.Containers.Adx.AdxWriter().GetFile(fmt);
     }
 }

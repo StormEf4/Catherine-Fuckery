@@ -27,6 +27,7 @@ public sealed class P4GContent : IDisposable
     readonly ConcurrentDictionary<string, IReadOnlyList<Bgra32Image>> _portraits = new();
     readonly ConcurrentDictionary<string, Pcm16?> _audio = new();
     readonly ConcurrentDictionary<string, Afs2?> _awbs = new();
+    readonly ConcurrentDictionary<string, Bgra32Image?> _cutins = new();
     public ConcurrentQueue<string> Problems { get; } = new();
 
     public string Root => _root;
@@ -89,7 +90,11 @@ public sealed class P4GContent : IDisposable
                 var found = ImageExtractor.Extract(ReadFile(path)!, path, problems);
                 // Composite bustups (body + eye/mouth layers) come out as several images; the largest is the body.
                 var best = found.OrderByDescending(f => (long)f.Image.Width * f.Image.Height).FirstOrDefault();
-                if (best != null) result.Add(Compact(best.Image));
+                if (best != null)
+                {
+                    var img = Compact(best.Image);
+                    result.Add(ch.PortraitEffect == "shadow" ? img.ShadowTint() : img);
+                }
             }
             catch (Exception ex) { problems.Add($"{path}: {ex.Message}"); }
         }
@@ -97,6 +102,17 @@ public sealed class P4GContent : IDisposable
         if (result.Count == 0) Problems.Enqueue($"characters[{ch.Id}].bustup_glob: nothing in the P4G archives matches '{ch.BustupGlob}'");
         return result;
     }
+
+    /// <summary>The Persona picture for a character's cut-in banner (Izanagi's card, a summon texture), or null.</summary>
+    public Bgra32Image? CutIn(CharactersRow ch) => ch.CutinImage == null ? null : _cutins.GetOrAdd(ch.Id, _ =>
+    {
+        var bytes = ReadFile(ch.CutinImage);
+        if (bytes == null) { Problems.Enqueue($"characters[{ch.Id}].cutin_image: {ch.CutinImage} not in the P4G archives"); return null; }
+        var problems = new List<string>();
+        var best = ImageExtractor.Extract(bytes, ch.CutinImage, problems).OrderByDescending(f => (long)f.Image.Width * f.Image.Height).FirstOrDefault();
+        foreach (var p in problems.Take(3)) Problems.Enqueue($"characters[{ch.Id}].cutin_image: {p}");
+        return best == null ? null : Compact(best.Image);
+    });
 
     /// <summary>Trim the empty margin and halve big portraits: they're drawn at most about half the screen tall.</summary>
     static Bgra32Image Compact(Bgra32Image img)
@@ -137,15 +153,14 @@ public sealed class P4GContent : IDisposable
         var (awb, cpk, _) = arc.Value;
         if (index < 0 || index >= awb.Entries.Count) return NoteMissing($"{what}: index {index} outside {bankId} (0..{awb.Entries.Count - 1})");
         var e = awb.Entries[index];
-        var head = cpk.ReadRange(e.Offset, (int)Math.Min(e.Size, 512));
-        var info = CriStreamInfo.Identify(head);
-        return NoteMissing($"{what}: stream is {info}; decoding {info.Codec} isn't in this version yet");
+        try { return CriDecoder.Decode(cpk.ReadRange(e.Offset, (int)e.Size)); }
+        catch (Exception ex) { return NoteMissing($"{what}: stream {index} of {bankId}: {ex.Message}"); }
     });
 
     /// <summary>Load everything the sheets name up front (on a background thread) so nothing hitches mid-climb.</summary>
     public void Preload()
     {
-        foreach (var ch in Sheets.Characters) Portraits(ch);
+        foreach (var ch in Sheets.Characters) { Portraits(ch); CutIn(ch); }
         foreach (var d in Sheets.Dialogue)
             if (d.BarkIndex is int b) Bark(SheetIndex.Characters[d.Speaker], b);
         foreach (var m in Sheets.Music) Music(m);

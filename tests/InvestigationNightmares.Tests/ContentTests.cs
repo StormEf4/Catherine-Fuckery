@@ -35,22 +35,26 @@ public sealed class FakeP4GInstall : IDisposable
         File.WriteAllBytes(Path.Combine(Root, "P4G.exe"), new byte[] { 0x4D, 0x5A });
         // An unknown 140-byte wrapper around the TMX, like the real 5,243,084-byte bustups.
         static byte[] Wrapped(byte[] tmx) => Crilayla.Compress(new byte[75].Concat(tmx).Concat(new byte[64]).ToArray());
-        var awb = new MemoryStream();
-        var w = new BinaryWriter(awb);
-        w.Write("AFS2"u8); w.Write(new byte[] { 2, 4, 2, 0 }); w.Write(1); w.Write((ushort)32); w.Write((ushort)0);
-        w.Write((ushort)0); w.Write(28); w.Write(28 + 64);
-        while (awb.Length < 32) w.Write((byte)0);
-        var hca = new byte[64]; "HCA\0"u8.CopyTo(hca); hca[7] = 40; "fmt\0"u8.CopyTo(hca.AsSpan(8)); hca[12] = 1; hca[14] = 0x5D; hca[15] = 0xC0;
-        w.Write(hca);
+        static Pcm16 Tone(int rate, int ch, double hz)
+        {
+            var smp = new short[rate / 4 * ch];
+            for (int i = 0; i < smp.Length; i++) smp[i] = (short)(9000 * Math.Sin(2 * Math.PI * hz * (i / ch) / rate));
+            return new Pcm16(ch, rate, smp);
+        }
+        // Voices are ADX, music is HCA, like the player's install.
+        var voices = Afs2.Build(new[] { CriDecoder.Encode(Tone(24000, 1, 300), hca: false), CriDecoder.Encode(Tone(24000, 1, 500), hca: false) });
+        var music = Afs2.Build(new[] { CriDecoder.Encode(Tone(48000, 2, 220), hca: true) });
         File.WriteAllBytes(Path.Combine(Root, "data.cpk"), CriCpk.Build(new[]
         {
             ("bustup/b2_1_1.bin", Wrapped(Tmx(224, 128, 42))),
             ("bustup/b2_2_1.bin", Wrapped(Tmx(200, 100, 40))),
             ("bustup/b2_10_1.bin", Wrapped(Tmx(1, 1, 1))),
-            ("bustup/b8_1_1.bin", Wrapped(Tmx(217, 71, 59))),
-            ("sound/adx2/en/btlmem.awb", awb.ToArray()),
+            ("bustup/b8_1_0.bin", Wrapped(Tmx(217, 71, 59))),
+            ("card/persona/i_prc001.tmx", Tmx(30, 60, 200, 0xFF, 32, 32)),
+            ("sound/adx2/en/btlmem.awb", voices),
+            ("sound/adx2/bgm/snd00_bgm.awb", music),
         }));
-        File.WriteAllBytes(Path.Combine(Root, "data_e.cpk"), CriCpk.Build(new[] { ("bustup/b8_1_1.bin", Wrapped(Tmx(9, 9, 9))) }));
+        File.WriteAllBytes(Path.Combine(Root, "data_e.cpk"), CriCpk.Build(new[] { ("bustup/b8_1_0.bin", Wrapped(Tmx(9, 9, 9))) }));
     }
 
     public void Dispose() => Directory.Delete(Root, true);
@@ -77,22 +81,37 @@ public class ContentTests
         Assert.Empty(c.Portraits(SheetIndex.Characters["yu"])); // P4's protagonist has no portrait, by design
         Assert.Empty(c.Portraits(SheetIndex.Characters["chie"]));
         Assert.Contains(c.Problems, p => p.StartsWith("characters[chie].bustup_glob"));
-        Assert.DoesNotContain(c.Problems, p => p.StartsWith("characters[yu]"));
+        Assert.DoesNotContain(c.Problems, p => p.StartsWith("characters[yu].bustup"));
+
+        // Shadow Yosuke is Yosuke's real portrait with the Shadow treatment (P4G has no Shadow portrait).
+        var shadow = c.Portrait(SheetIndex.Characters["shadow_yosuke"], 0)!;
+        Assert.Equal(portraits[0].Width, shadow.Width);
+        Assert.NotEqual(portraits[0].Pixels, shadow.Pixels);
+
+        // Izanagi's card for Yu's cut-in
+        Assert.NotNull(c.CutIn(SheetIndex.Characters["yu"]));
+        Assert.Null(c.CutIn(SheetIndex.Characters["shadow_yosuke"]));
     }
 
     [Fact]
-    public void Voice_streams_are_found_and_their_codec_reported()
+    public void Voice_barks_decode_from_adx_and_music_from_hca()
     {
         using var fake = new FakeP4GInstall();
         using var c = P4GContent.Open(fake.Root);
         var arc = c.WaveArchive("p4g_voice_bank");
-        Assert.NotNull(arc);
-        Assert.Single(arc!.Value.awb.Entries);
-        Assert.Null(c.Bark(SheetIndex.Characters["yosuke"], 0));
-        Assert.Contains(c.Problems, p => p.Contains("stream is HCA 1ch 24000Hz"));
+        Assert.Equal(2, arc!.Value.awb.Entries.Count);
+
+        var bark = c.Bark(SheetIndex.Characters["yosuke"], 1);
+        Assert.NotNull(bark);
+        Assert.Equal(24000, bark!.SampleRate);
+        Assert.InRange(bark.DurationSeconds, 0.2, 0.3);
         Assert.Null(c.Bark(SheetIndex.Characters["yosuke"], 5));
         Assert.Contains(c.Problems, p => p.Contains("index 5 outside"));
-        Assert.Null(c.Music(SheetIndex.Music["bgm_ill_face_myself_battle"]));
+
+        var song = c.Music(SheetIndex.Music["bgm_ill_face_myself_battle"] with { WaveIndex = 0 });
+        Assert.NotNull(song);
+        Assert.Equal(2, song!.Channels);
+        Assert.Equal(48000, song.SampleRate);
     }
 
     [Fact]

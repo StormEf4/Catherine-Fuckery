@@ -133,6 +133,12 @@ sealed unsafe class OverlayRenderer
         Quad(dev, _white, 0, y, W, h, band);
         Quad(dev, _white, 0, y, W, 4, YellowArgb);
         Quad(dev, _white, 0, y + h - 4, W, 4, YellowArgb);
+        var card = CutInImage(dev, c.owner, now);
+        if (card != null)
+        {
+            float ch = h * 1.5f, cw = card.W * ch / card.H;
+            Quad(dev, card.Handle, W * 0.03f + (1 - slide) * -W * 0.3f, y + (h - ch) / 2, cw, ch, Argb((byte)(255 * slide), 255, 255, 255));
+        }
         var portrait = Portrait(dev, c.owner, 1, now);
         if (portrait != null)
         {
@@ -141,7 +147,7 @@ sealed unsafe class OverlayRenderer
             Quad(dev, portrait.Handle, px, y + h - ph, pw, ph, Argb((byte)(255 * slide), 255, 255, 255));
         }
         var tex = Text(dev, $"{c.owner.Persona.ToUpperInvariant()}  —  {c.power.Skill.ToUpperInvariant()}", h * 0.42f, Color.White, (int)(W * 0.7f), true, now, Color.Black);
-        Quad(dev, tex.Handle, W * 0.06f - (1 - slide) * W * 0.3f, y + (h - tex.H) / 2, tex.W, tex.H, Argb((byte)(255 * slide), 255, 255, 255));
+        Quad(dev, tex.Handle, W * (card != null ? 0.22f : 0.06f) - (1 - slide) * W * 0.3f, y + (h - tex.H) / 2, tex.W, tex.H, Argb((byte)(255 * slide), 255, 255, 255));
     }
 
     void DrawMenu(nint dev, List<CharactersRow> members, int selected, float W, float H, double now)
@@ -260,6 +266,19 @@ sealed unsafe class OverlayRenderer
             t.Handle = D3D9.CreateTexture(dev, w, h, crop);
             t.W = w; t.H = h;
         }
+        _textures[key] = t;
+        return t.Handle == 0 ? null : t;
+    }
+
+    Tex? CutInImage(nint dev, CharactersRow ch, double now)
+    {
+        string key = $"c|{ch.Id}";
+        if (_textures.TryGetValue(key, out var t)) { t.LastUsed = now; return t.Handle == 0 ? null : t; }
+        var content = _content();
+        if (content == null) return null;
+        var img = content.CutIn(ch);
+        t = new Tex { LastUsed = double.MaxValue };
+        if (img != null) { t.Handle = D3D9.CreateTexture(dev, img.Width, img.Height, img.Pixels); t.W = img.Width; t.H = img.Height; }
         _textures[key] = t;
         return t.Handle == 0 ? null : t;
     }

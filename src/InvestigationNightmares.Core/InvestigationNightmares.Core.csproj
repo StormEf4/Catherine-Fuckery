@@ -7,4 +7,7 @@
     <RootNamespace>InvestigationNightmares</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="VGAudio" Version="2.2.1" />
+  </ItemGroup>
 </Project>

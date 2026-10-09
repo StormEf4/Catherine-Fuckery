@@ -22,6 +22,17 @@
       "type": "string",
       "nullable": true
     },
+    "portrait_effect": {
+      "type": "enum",
+      "values": [
+        "none",
+        "shadow"
+      ]
+    },
+    "cutin_image": {
+      "type": "string",
+      "nullable": true
+    },
     "voice_source": {
       "type": "ref",
       "sheet": "game_files"
@@ -38,9 +49,11 @@
       "p4g_char_id": 1,
       "bustup_source": "p4g_data_cpks",
       "bustup_glob": null,
+      "portrait_effect": "none",
+      "cutin_image": "card/persona/i_prc001.tmx",
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#5A6E8C",
-      "_notes": "P4G gives the protagonist no dialogue portrait (data.cpk has no bustup/b1_*), so Yu speaks with his name plate only, as in P4G."
+      "_notes": "P4G gives the protagonist no dialogue portrait (no bustup/b1_*), so Yu speaks with his name plate only, as in P4G. His cut-in is Izanagi's card (card/persona/i_prc001.tmx, confirmed by the player)."
     },
     {
       "id": "yosuke",
@@ -49,13 +62,14 @@
       "p4g_char_id": 2,
       "bustup_source": "p4g_data_cpks",
       "bustup_glob": "bustup/b2_?_1.bin",
+      "portrait_effect": "none",
+      "cutin_image": "tex2/battle/cutin/syoukan/SYKN_2/001/syoukan_moji.dds",
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#E0802A",
       "_unverified": [
-        "p4g_char_id",
-        "bustup_glob"
+        "cutin_image"
       ],
-      "_notes": "Character number from P4's party order (2 Yosuke, 3 Chie, 8 Teddie); bustup/bN files exist for it. Expressions 1-9 with frame 1 are the talking set. Confirm with recon's PNGs."
+      "_notes": "b2 confirmed as Yosuke by the player (char_02.png). Expressions 1-9, frame 1. Cut-in: his Persona-summon texture (SYKN = summon, 2 = Yosuke's party slot); what it shows is unconfirmed, and there's no Jiraiya card in card/persona (those are the protagonist's Personas)."
     },
     {
       "id": "chie",
@@ -64,13 +78,14 @@
       "p4g_char_id": 3,
       "bustup_source": "p4g_data_cpks",
       "bustup_glob": "bustup/b3_?_1.bin",
+      "portrait_effect": "none",
+      "cutin_image": "tex2/battle/cutin/syoukan/SYKN_3/001/syoukan_moji.dds",
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#4FA34A",
       "_unverified": [
-        "p4g_char_id",
-        "bustup_glob"
+        "cutin_image"
       ],
-      "_notes": "Character number from P4's party order (2 Yosuke, 3 Chie, 8 Teddie); bustup/bN files exist for it. Expressions 1-9 with frame 1 are the talking set. Confirm with recon's PNGs."
+      "_notes": "b3 confirmed as Chie by the player (char_03.png)."
     },
     {
       "id": "teddie",
@@ -78,14 +93,15 @@
       "persona": "Kintoki-Douji",
       "p4g_char_id": 8,
       "bustup_source": "p4g_data_cpks",
-      "bustup_glob": "bustup/b8_?_1.bin",
+      "bustup_glob": "bustup/b8_?_0.bin",
+      "portrait_effect": "none",
+      "cutin_image": "tex2/battle/cutin/syoukan/SYKN_8/001/syoukan_moji.dds",
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#D9473B",
       "_unverified": [
-        "p4g_char_id",
-        "bustup_glob"
+        "cutin_image"
       ],
-      "_notes": "Character number from P4's party order (2 Yosuke, 3 Chie, 8 Teddie); bustup/bN files exist for it. Expressions 1-9 with frame 1 are the talking set. Confirm with recon's PNGs."
+      "_notes": "b8 confirmed as Teddie by the player (char_08.png). His files use frame 0 (b8_1_0..b8_7_0)."
     },
     {
       "id": "shadow_yosuke",
@@ -93,13 +109,12 @@
       "persona": "Shadow",
       "p4g_char_id": 2,
       "bustup_source": "p4g_data_cpks",
-      "bustup_glob": "bustup/b2_5?_0.bin",
+      "bustup_glob": "bustup/b2_?_1.bin",
+      "portrait_effect": "shadow",
+      "cutin_image": null,
       "voice_source": "p4g_voice_bank",
       "nameplate_color": "#F2D21B",
-      "_unverified": [
-        "bustup_glob"
-      ],
-      "_notes": "Guess: Yosuke's single-frame 50-series (b2_50_0..b2_53_0). recon exports Yosuke's portraits as PNGs to confirm."
+      "_notes": "P4G has no Shadow Yosuke portrait (the player checked every b2 file: all normal Yosuke), so the mod shows Yosuke's real portrait with a Shadow treatment: darkened, gold-tinted, with a glowing gold rim."
     }
   ]
 }

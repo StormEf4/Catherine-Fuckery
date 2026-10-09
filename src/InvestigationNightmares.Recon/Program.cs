@@ -19,6 +19,7 @@ const string Usage = """
     recon p4g [P4G folder] --wav <bank.xwb> <from> <to>   export clips <from>..<to> of a bank as WAV to listen to
     recon catherine [Catherine Classic folder]     list Catherine's data files and their formats
     recon list <any folder>                        list a folder's files and look inside CRI .cpk/.acb/.csb and XACT .xwb files
+    recon listen [P4G folder]                      export P4G's songs (30 s previews) and battle voice clips as numbered WAVs
     recon sheets                                   list the sheet cells that still need checking
     Folders default to the Steam install.
     """;
@@ -34,6 +35,7 @@ try
         case "p4g": return P4G(argv.Skip(1).ToList());
         case "catherine": return Catherine(argv.Skip(1).ToList());
         case "sheets": return SheetsTodo();
+        case "listen": return Listen(argv.Skip(1).ToList());
         case "list" when argv.Count > 1: return ListFolder(argv[1], "list_" + Safe(Path.GetFileName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(argv[1])))));
         default: Console.WriteLine(Usage); return 1;
     }
@@ -148,6 +150,48 @@ int P4G(List<string> a)
 }
 
 static (CriCpk cpk, CpkEntry entry) FindEntry(InvestigationNightmares.Content.P4GContent c, string path) => c.Locate(path) ?? throw new Exception($"{path} not found");
+
+int Listen(List<string> a)
+{
+    var dir = Find("p4g_exe", a) ?? throw new Exception("Persona 4 Golden not found; pass its folder");
+    using var c = InvestigationNightmares.Content.P4GContent.Open(dir);
+    var outDir = Path.Combine(outRoot, "listen");
+    foreach (var (gameFile, sub, previewSeconds, minSeconds) in new[] { ("p4g_bgm_bank", "music", 30.0, 60.0), ("p4g_voice_bank", "voices", 0.0, 0.0) })
+    {
+        var arc = c.WaveArchive(gameFile);
+        if (arc == null) { Console.WriteLine($"{gameFile}: not found"); continue; }
+        var (awb, cpk, _) = arc.Value;
+        var target = Path.Combine(outDir, sub);
+        Directory.CreateDirectory(target);
+        var list = new StringBuilder("index\tseconds\tfile\n");
+        int done = 0;
+        foreach (var e in awb.Entries)
+        {
+            try
+            {
+                var bytes = cpk.ReadRange(e.Offset, (int)e.Size);
+                var info = CriStreamInfo.Identify(bytes);
+                double seconds = info.Codec == "HCA" && info.SampleRate > 0 ? info.Blocks * 1024.0 / info.SampleRate : 0;
+                if (minSeconds > 0 && seconds < minSeconds) continue;
+                var pcm = CriDecoder.Decode(bytes);
+                if (previewSeconds > 0)
+                {
+                    int keep = Math.Min(pcm.Samples.Length, (int)(previewSeconds * pcm.SampleRate) * pcm.Channels);
+                    pcm = pcm with { Samples = pcm.Samples[..keep] };
+                }
+                var file = $"{e.Index:D4}.wav";
+                File.WriteAllBytes(Path.Combine(target, file), pcm.ToWav());
+                list.AppendLine($"{e.Index}\t{(seconds > 0 ? seconds : pcm.DurationSeconds):F1}\t{file}");
+                if (++done % 100 == 0) Console.WriteLine($"  {sub}: {done}...");
+            }
+            catch (Exception ex) { list.AppendLine($"{e.Index}\tERROR {ex.Message}"); }
+        }
+        File.WriteAllText(Path.Combine(target, "list.txt"), list.ToString());
+        Console.WriteLine($"{sub}: {done} files -> {target}");
+    }
+    Console.WriteLine("These are your own game's sounds, for you to listen to. Don't share them.");
+    return 0;
+}
 
 int Catherine(List<string> a)
 {
