@@ -1,0 +1,18 @@
+{
+  "sheet": "tuning",
+  "description": "Single numbers that shape how the mashup feels.",
+  "columns": {
+    "id": { "type": "id" },
+    "value": { "type": "number" },
+    "unit": { "type": "string" },
+    "meaning": { "type": "string" }
+  },
+  "rows": [
+    { "id": "modal_time_scale", "value": 1.0, "unit": "x", "meaning": "Catherine's clock speed while a Team conversation is on screen (game input is blocked meanwhile).",
+      "_unverified": ["value"], "_notes": "1.0 = don't touch the clock. If the tower keeps crumbling during the intro, lower it (0 can freeze games that pace frames with the same clock)." },
+    { "id": "climb_line_seconds", "value": 5.0, "unit": "s", "meaning": "How long a line said mid-climb (boss taunts, power calls) stays on screen; these never block input." },
+    { "id": "bark_volume", "value": 1.0, "unit": "x", "meaning": "Volume of P4G voice barks." },
+    { "id": "portrait_height", "value": 0.55, "unit": "screen", "meaning": "Portrait height as a fraction of the screen height." },
+    { "id": "cutin_seconds", "value": 1.2, "unit": "s", "meaning": "Length of the Persona cut-in banner when a power is used." }
+  ]
+}

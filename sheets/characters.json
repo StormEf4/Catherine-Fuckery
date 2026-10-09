@@ -1,0 +1,72 @@
+{
+  "sheet": "characters",
+  "description": "Investigation Team members (and Shadows) who appear in Vincent's nightmares. Portraits and voices come from the player's Persona 4 Golden install.",
+  "columns": {
+    "id": { "type": "id" },
+    "name": { "type": "string" },
+    "persona": { "type": "string" },
+    "p4g_char_id": { "type": "int" },
+    "bustup_source": { "type": "ref", "sheet": "game_files" },
+    "bustup_glob": { "type": "string" },
+    "voice_source": { "type": "ref", "sheet": "game_files" },
+    "nameplate_color": { "type": "string" }
+  },
+  "rows": [
+    {
+      "id": "yu",
+      "name": "Yu Narukami",
+      "persona": "Izanagi",
+      "p4g_char_id": 1,
+      "bustup_source": "p4g_data_pacs",
+      "bustup_glob": "bustup/*001_*",
+      "voice_source": "p4g_voice_bank",
+      "nameplate_color": "#5A6E8C",
+      "_unverified": ["p4g_char_id", "bustup_glob"]
+    },
+    {
+      "id": "yosuke",
+      "name": "Yosuke Hanamura",
+      "persona": "Jiraiya",
+      "p4g_char_id": 2,
+      "bustup_source": "p4g_data_pacs",
+      "bustup_glob": "bustup/*002_*",
+      "voice_source": "p4g_voice_bank",
+      "nameplate_color": "#E0802A",
+      "_unverified": ["p4g_char_id", "bustup_glob"]
+    },
+    {
+      "id": "chie",
+      "name": "Chie Satonaka",
+      "persona": "Tomoe",
+      "p4g_char_id": 3,
+      "bustup_source": "p4g_data_pacs",
+      "bustup_glob": "bustup/*003_*",
+      "voice_source": "p4g_voice_bank",
+      "nameplate_color": "#4FA34A",
+      "_unverified": ["p4g_char_id", "bustup_glob"]
+    },
+    {
+      "id": "teddie",
+      "name": "Teddie",
+      "persona": "Kintoki-Douji",
+      "p4g_char_id": 8,
+      "bustup_source": "p4g_data_pacs",
+      "bustup_glob": "bustup/*008_*",
+      "voice_source": "p4g_voice_bank",
+      "nameplate_color": "#D9473B",
+      "_unverified": ["p4g_char_id", "bustup_glob"]
+    },
+    {
+      "id": "shadow_yosuke",
+      "name": "Shadow Yosuke",
+      "persona": "Shadow",
+      "p4g_char_id": 2,
+      "bustup_source": "p4g_data_pacs",
+      "bustup_glob": "bustup/*002_*shadow*",
+      "voice_source": "p4g_voice_bank",
+      "nameplate_color": "#F2D21B",
+      "_unverified": ["bustup_glob"],
+      "_notes": "Shadow selves reuse the owner's portrait set with yellow eyes in P4G; the exact variant file is unknown."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "sheet": "landings",
+  "description": "Team members waiting on a landing. On that landing the player opens the Team's TV (mod_talk) and picks who to talk to; each conversation plays its lines and may hand over Persona power charges.",
+  "columns": {
+    "id": { "type": "id" },
+    "landing": { "type": "ref", "sheet": "triggers" },
+    "character": { "type": "ref", "sheet": "characters" },
+    "lines": { "type": "refs", "sheet": "dialogue" },
+    "grants_power": { "type": "ref", "sheet": "powers", "nullable": true },
+    "grant_charges": { "type": "int" }
+  },
+  "rows": [
+    { "id": "n1_yosuke", "landing": "night1_landing", "character": "yosuke", "lines": ["landing_yosuke_1", "landing_yosuke_grant"], "grants_power": "garu", "grant_charges": 0 },
+    { "id": "n1_chie", "landing": "night1_landing", "character": "chie", "lines": ["landing_chie_1", "landing_chie_2"], "grants_power": null, "grant_charges": 0 },
+    { "id": "n1_teddie", "landing": "night1_landing", "character": "teddie", "lines": ["landing_teddie_1"], "grants_power": "sukunda", "grant_charges": 1 }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "sheet": "triggers",
+  "description": "How the mod knows where Vincent is: Catherine opens loose files per stage/area, and the mod matches the path of each file the game opens (case-insensitive regex, forward slashes) against these rows.",
+  "columns": {
+    "id": { "type": "id" },
+    "night": { "type": "int" },
+    "kind": { "type": "enum", "values": ["stage", "landing", "boss_stage", "boss_clear"] },
+    "file_regex": { "type": "string" },
+    "cc_area_name": { "type": "string" }
+  },
+  "rows": [
+    {
+      "id": "night1_stage1",
+      "night": 1,
+      "kind": "stage",
+      "file_regex": "data/puzzle/.*(stg|stage)_?0?1_?0?1",
+      "cc_area_name": "Night 1, first climb",
+      "_unverified": ["file_regex"],
+      "_notes": "recon --watch logs every file Catherine opens with timestamps; play into Night 1 and copy the first stage file here."
+    },
+    {
+      "id": "night1_landing",
+      "night": 1,
+      "kind": "landing",
+      "file_regex": "data/.*(landing|land|ldg)_?0?1",
+      "cc_area_name": "Night 1 landing",
+      "_unverified": ["file_regex"]
+    },
+    {
+      "id": "night1_boss",
+      "night": 1,
+      "kind": "boss_stage",
+      "file_regex": "data/puzzle/.*(stg|stage)_?0?1_?0?2",
+      "cc_area_name": "Night 1 boss climb (Immoral Beast)",
+      "_unverified": ["file_regex"]
+    },
+    {
+      "id": "night1_boss_clear",
+      "night": 1,
+      "kind": "boss_clear",
+      "file_regex": "data/.*(confession|confess|clear)",
+      "cc_area_name": "Night 1 cleared (confessional booth)",
+      "_unverified": ["file_regex"]
+    }
+  ]
+}

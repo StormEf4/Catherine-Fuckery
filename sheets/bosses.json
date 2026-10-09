@@ -1,0 +1,30 @@
+{
+  "sheet": "bosses",
+  "description": "Shadow bosses. The boss climb gets the Shadow's name plate, portrait, voice and P4G boss music; the boss's 3D model stays Catherine's own in this version.",
+  "columns": {
+    "id": { "type": "id" },
+    "stage": { "type": "ref", "sheet": "triggers" },
+    "clear": { "type": "ref", "sheet": "triggers" },
+    "cc_boss_name": { "type": "string" },
+    "shadow": { "type": "ref", "sheet": "characters" },
+    "music": { "type": "ref", "sheet": "music" },
+    "intro_line": { "type": "ref", "sheet": "dialogue" },
+    "taunts": { "type": "refs", "sheet": "dialogue" },
+    "taunt_interval_s": { "type": "number" },
+    "defeat_line": { "type": "ref", "sheet": "dialogue" }
+  },
+  "rows": [
+    {
+      "id": "n1_shadow_yosuke",
+      "stage": "night1_boss",
+      "clear": "night1_boss_clear",
+      "cc_boss_name": "Immoral Beast",
+      "shadow": "shadow_yosuke",
+      "music": "bgm_ill_face_myself_battle",
+      "intro_line": "boss_intro",
+      "taunts": ["boss_taunt_1", "boss_taunt_2"],
+      "taunt_interval_s": 25,
+      "defeat_line": "boss_defeat"
+    }
+  ]
+}

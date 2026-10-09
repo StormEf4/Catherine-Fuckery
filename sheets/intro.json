@@ -1,0 +1,24 @@
+{
+  "sheet": "intro",
+  "description": "The Midnight Channel intro, played once when Night 1's first stage loads (replayable from the mod's config). Steps run in order.",
+  "columns": {
+    "id": { "type": "id" },
+    "order": { "type": "int" },
+    "trigger": { "type": "ref", "sheet": "triggers" },
+    "kind": { "type": "enum", "values": ["tv_static_in", "music", "line", "grant_power", "tv_static_out"] },
+    "line": { "type": "ref", "sheet": "dialogue", "nullable": true },
+    "power": { "type": "ref", "sheet": "powers", "nullable": true },
+    "music": { "type": "ref", "sheet": "music", "nullable": true },
+    "duration_s": { "type": "number" }
+  },
+  "rows": [
+    { "id": "i01_static", "order": 1, "trigger": "night1_stage1", "kind": "tv_static_in", "line": null, "power": null, "music": null, "duration_s": 1.5 },
+    { "id": "i02_music", "order": 2, "trigger": "night1_stage1", "kind": "music", "line": null, "power": null, "music": "bgm_backside_of_the_tv", "duration_s": 0 },
+    { "id": "i03_yu", "order": 3, "trigger": "night1_stage1", "kind": "line", "line": "intro_yu_1", "power": null, "music": null, "duration_s": 0 },
+    { "id": "i04_yu", "order": 4, "trigger": "night1_stage1", "kind": "line", "line": "intro_yu_2", "power": null, "music": null, "duration_s": 0 },
+    { "id": "i05_grant", "order": 5, "trigger": "night1_stage1", "kind": "grant_power", "line": null, "power": "sukunda", "music": null, "duration_s": 0 },
+    { "id": "i06_yu", "order": 6, "trigger": "night1_stage1", "kind": "line", "line": "intro_yu_grant", "power": null, "music": null, "duration_s": 0 },
+    { "id": "i07_teddie", "order": 7, "trigger": "night1_stage1", "kind": "line", "line": "intro_teddie", "power": null, "music": null, "duration_s": 0 },
+    { "id": "i08_out", "order": 8, "trigger": "night1_stage1", "kind": "tv_static_out", "line": null, "power": null, "music": null, "duration_s": 1.0 }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "sheet": "powers",
+  "description": "Persona powers Vincent can call on mid-climb. effect: time_scale = Catherine's clock runs at param for duration_s (thinking time while the tower crumbles slower); auto_pull = the mod holds grab and pulls the block in front param times at game speed time_scale_during.",
+  "columns": {
+    "id": { "type": "id" },
+    "owner": { "type": "ref", "sheet": "characters" },
+    "skill": { "type": "string" },
+    "effect": { "type": "enum", "values": ["time_scale", "auto_pull"] },
+    "param": { "type": "number" },
+    "duration_s": { "type": "number" },
+    "time_scale_during": { "type": "number" },
+    "charges_per_stage": { "type": "int" },
+    "hotkey": { "type": "ref", "sheet": "bindings" },
+    "cast_line": { "type": "ref", "sheet": "dialogue" },
+    "pull_step_ms": { "type": "int" }
+  },
+  "rows": [
+    {
+      "id": "sukunda",
+      "owner": "yu",
+      "skill": "Sukunda",
+      "effect": "time_scale",
+      "param": 0.4,
+      "duration_s": 8,
+      "time_scale_during": 0.4,
+      "charges_per_stage": 1,
+      "hotkey": "mod_power_1",
+      "cast_line": "intro_yu_grant",
+      "pull_step_ms": 0
+    },
+    {
+      "id": "garu",
+      "owner": "yosuke",
+      "skill": "Garu",
+      "effect": "auto_pull",
+      "param": 3,
+      "duration_s": 0,
+      "time_scale_during": 2.5,
+      "charges_per_stage": 1,
+      "hotkey": "mod_power_2",
+      "cast_line": "landing_yosuke_grant",
+      "pull_step_ms": 450,
+      "_unverified": ["pull_step_ms"],
+      "_notes": "pull_step_ms = how long one grab+pull takes in Catherine at normal speed; tune in game."
+    }
+  ]
+}

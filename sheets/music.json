@@ -1,0 +1,37 @@
+{
+  "sheet": "music",
+  "description": "Persona 4 Golden tracks played inside Catherine. Read from the player's P4G sound banks. replaces_cc_file: Catherine file to redirect so the game itself plays the track (null = the mod plays it over the scene).",
+  "columns": {
+    "id": { "type": "id" },
+    "title": { "type": "string" },
+    "source": { "type": "ref", "sheet": "game_files" },
+    "wave_index": { "type": "int", "nullable": true },
+    "loop": { "type": "bool" },
+    "volume": { "type": "number" },
+    "replaces_cc_file": { "type": "string", "nullable": true }
+  },
+  "rows": [
+    {
+      "id": "bgm_backside_of_the_tv",
+      "title": "Backside of the TV",
+      "source": "p4g_bgm_bank",
+      "wave_index": null,
+      "loop": true,
+      "volume": 0.8,
+      "replaces_cc_file": null,
+      "_unverified": ["wave_index"],
+      "_notes": "Plays during the Midnight Channel intro, over Catherine's silence before Night 1. Index: find with `recon` (longest-looping tracks listed with durations)."
+    },
+    {
+      "id": "bgm_ill_face_myself_battle",
+      "title": "I'll Face Myself -Battle-",
+      "source": "p4g_bgm_bank",
+      "wave_index": null,
+      "loop": true,
+      "volume": 0.9,
+      "replaces_cc_file": null,
+      "_unverified": ["wave_index", "replaces_cc_file"],
+      "_notes": "Shadow boss theme. Once recon names Night 1's boss BGM file in data/sound, put it in replaces_cc_file so Catherine itself plays this track instead (WAV/ADX targets supported)."
+    }
+  ]
+}

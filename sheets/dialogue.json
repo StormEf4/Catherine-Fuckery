@@ -1,0 +1,48 @@
+{
+  "sheet": "dialogue",
+  "description": "Lines the Investigation Team speaks in Vincent's nightmares. Text is written for this crossover; portraits and the voice bark that plays with each line are the cast's real P4G assets from the player's install (bark_index into the speaker's voice_source bank, null = no bark).",
+  "columns": {
+    "id": { "type": "id" },
+    "speaker": { "type": "ref", "sheet": "characters" },
+    "text": { "type": "string" },
+    "bark_index": { "type": "int", "nullable": true },
+    "expression": { "type": "int" }
+  },
+  "rows": [
+    { "id": "intro_yu_1", "speaker": "yu", "expression": 0, "bark_index": null,
+      "text": "Hey. Vincent, right? You're not just dreaming. This is the other side of the TV." },
+    { "id": "intro_yu_2", "speaker": "yu", "expression": 0, "bark_index": null,
+      "text": "Something in here wants you climbing. We've dealt with worse. Take this." },
+    { "id": "intro_yu_grant", "speaker": "yu", "expression": 1, "bark_index": null,
+      "text": "When the tower gets ahead of you, call Izanagi. Sukunda slows everything down for a few seconds.",
+      "_unverified": ["bark_index"], "_notes": "Should be Yu's battle 'Persona!' bark." },
+    { "id": "intro_teddie", "speaker": "teddie", "expression": 0, "bark_index": null,
+      "text": "Sensei's right! Watch your step, beary carefully, okay? The Team's waiting at the top!",
+      "_unverified": ["bark_index"] },
+
+    { "id": "landing_yosuke_1", "speaker": "yosuke", "expression": 0, "bark_index": null,
+      "text": "Dude... sheep? Talking sheep? Okay, I hang out with a talking bear, so I can't judge." },
+    { "id": "landing_yosuke_grant", "speaker": "yosuke", "expression": 1, "bark_index": null,
+      "text": "Here. Jiraiya's Garu can yank a block out three times before you blink. Use it when you're boxed in.",
+      "_unverified": ["bark_index"], "_notes": "Should be Yosuke's summon bark." },
+    { "id": "landing_chie_1", "speaker": "chie", "expression": 0, "bark_index": null,
+      "text": "Tip from someone who's kicked a lot of things: don't climb straight up. Pull blocks out to the sides and make stairs." },
+    { "id": "landing_chie_2", "speaker": "chie", "expression": 1, "bark_index": null,
+      "text": "And whatever's waiting at the top of the next one sounds a LOT like Yosuke. Just saying.",
+      "_unverified": ["bark_index"] },
+    { "id": "landing_teddie_1", "speaker": "teddie", "expression": 0, "bark_index": null,
+      "text": "I can smell a Shadow up there! It's grrr-umpy and it's someone we know. Don't let it catch you!",
+      "_unverified": ["bark_index"] },
+
+    { "id": "boss_intro", "speaker": "shadow_yosuke", "expression": 0, "bark_index": null,
+      "text": "I am a shadow... the true self.",
+      "_unverified": ["bark_index"], "_notes": "The Shadow-self line from P4G; find its clip in the voice bank." },
+    { "id": "boss_taunt_1", "speaker": "shadow_yosuke", "expression": 0, "bark_index": null,
+      "text": "Climbing away from your problems? Heh. Who does that remind you of?" },
+    { "id": "boss_taunt_2", "speaker": "shadow_yosuke", "expression": 0, "bark_index": null,
+      "text": "This tower, this town, it's all so BORING. Let it all fall down!" },
+    { "id": "boss_defeat", "speaker": "yosuke", "expression": 2, "bark_index": null,
+      "text": "...Yeah. That's me too. Thanks for climbing through it, man.",
+      "_unverified": ["bark_index"] }
+  ]
+}

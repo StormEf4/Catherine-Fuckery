@@ -1,0 +1,9 @@
+bin/
+obj/
+dist/
+*.user
+.vs/
+__pycache__/
+# Never commit game content extracted from a player's install
+recon-out/
+cache/

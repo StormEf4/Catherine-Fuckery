@@ -1,0 +1,126 @@
+{
+  "sheet": "hooks",
+  "description": "Every place the mod hooks Catherine's process. Only public Windows/DirectX entry points are used: no addresses inside Catherine.exe, so nothing depends on the game's version.",
+  "columns": {
+    "id": {
+      "type": "id"
+    },
+    "module": {
+      "type": "string"
+    },
+    "symbol": {
+      "type": "string"
+    },
+    "vtable_index": {
+      "type": "int",
+      "nullable": true
+    },
+    "purpose": {
+      "type": "string"
+    },
+    "system": {
+      "type": "enum",
+      "values": [
+        "overlay",
+        "triggers",
+        "music",
+        "time",
+        "input"
+      ]
+    }
+  },
+  "rows": [
+    {
+      "id": "d3d9_endscene",
+      "module": "d3d9.dll",
+      "symbol": "IDirect3DDevice9::EndScene",
+      "vtable_index": 42,
+      "purpose": "Draw portraits, text boxes, Persona cut-ins and TV static over the frame.",
+      "system": "overlay"
+    },
+    {
+      "id": "d3d9_reset",
+      "module": "d3d9.dll",
+      "symbol": "IDirect3DDevice9::Reset",
+      "vtable_index": 16,
+      "purpose": "Release overlay textures before a device reset (resolution change, alt-tab).",
+      "system": "overlay"
+    },
+    {
+      "id": "createfile_w",
+      "module": "kernel32.dll",
+      "symbol": "CreateFileW",
+      "vtable_index": null,
+      "purpose": "See which stage/area file Catherine opens (triggers) and swap the boss track (music).",
+      "system": "triggers"
+    },
+    {
+      "id": "createfile_a",
+      "module": "kernel32.dll",
+      "symbol": "CreateFileA",
+      "vtable_index": null,
+      "purpose": "Same as CreateFileW for ANSI callers.",
+      "system": "triggers"
+    },
+    {
+      "id": "qpc",
+      "module": "kernel32.dll",
+      "symbol": "QueryPerformanceCounter",
+      "vtable_index": null,
+      "purpose": "Scale Catherine's clock for Sukunda and Garu.",
+      "system": "time",
+      "_unverified": [
+        "symbol"
+      ],
+      "_notes": "Assumes Catherine times frames with QPC; timeGetTime is hooked too."
+    },
+    {
+      "id": "timegettime",
+      "module": "winmm.dll",
+      "symbol": "timeGetTime",
+      "vtable_index": null,
+      "purpose": "Scale Catherine's clock (fallback clock source).",
+      "system": "time"
+    },
+    {
+      "id": "xinput_getstate",
+      "module": "xinput1_3.dll|xinput1_4.dll|xinput9_1_0.dll",
+      "symbol": "XInputGetState",
+      "vtable_index": null,
+      "purpose": "Read mod hotkeys on the pad, hide them from the game, and press grab/pull for Garu.",
+      "system": "input",
+      "_unverified": [
+        "module"
+      ],
+      "_notes": "Which XInput DLL Catherine imports isn't confirmed; the mod hooks whichever is loaded."
+    },
+    {
+      "id": "dinput8_getdevicestate",
+      "module": "dinput8.dll",
+      "symbol": "IDirectInputDevice8::GetDeviceState",
+      "vtable_index": 9,
+      "purpose": "Hide keyboard input from the game while a Team conversation or menu is open.",
+      "system": "input",
+      "_unverified": [
+        "symbol"
+      ],
+      "_notes": "Only matters if Catherine reads the keyboard through DirectInput; the window-message filter covers the other case."
+    },
+    {
+      "id": "wndproc_filter",
+      "module": "user32.dll",
+      "symbol": "SetWindowLongPtrW(GWLP_WNDPROC)",
+      "vtable_index": null,
+      "purpose": "Swallow key and raw-input messages to the game window while a Team conversation or menu is open.",
+      "system": "input"
+    },
+    {
+      "id": "getasynckeystate",
+      "module": "user32.dll",
+      "symbol": "GetAsyncKeyState",
+      "vtable_index": null,
+      "purpose": "Report keys as up to the game while a Team conversation or menu is open.",
+      "system": "input"
+    }
+  ]
+}
