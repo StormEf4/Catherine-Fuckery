@@ -2,45 +2,72 @@
   "sheet": "triggers",
   "description": "How the mod knows where Vincent is: Catherine opens loose files per stage/area, and the mod matches the path of each file the game opens (case-insensitive regex, forward slashes) against these rows.",
   "columns": {
-    "id": { "type": "id" },
-    "night": { "type": "int" },
-    "kind": { "type": "enum", "values": ["stage", "landing", "boss_stage", "boss_clear"] },
-    "file_regex": { "type": "string" },
-    "cc_area_name": { "type": "string" }
+    "id": {
+      "type": "id"
+    },
+    "night": {
+      "type": "int"
+    },
+    "kind": {
+      "type": "enum",
+      "values": [
+        "stage",
+        "landing",
+        "boss_stage",
+        "boss_clear"
+      ]
+    },
+    "file_regex": {
+      "type": "string"
+    },
+    "cc_area_name": {
+      "type": "string"
+    }
   },
   "rows": [
     {
       "id": "night1_stage1",
       "night": 1,
       "kind": "stage",
-      "file_regex": "data/puzzle/.*(stg|stage)_?0?1_?0?1",
+      "file_regex": "data/puzzle/script/([A-Z]_)?pzl_01_01(_360)?\\.bf",
       "cc_area_name": "Night 1, first climb",
-      "_unverified": ["file_regex"],
-      "_notes": "recon --watch logs every file Catherine opens with timestamps; play into Night 1 and copy the first stage file here."
+      "_unverified": [
+        "file_regex"
+      ],
+      "_notes": "Night 1 climbs are data/puzzle/script/pzl_01_01..03.bf (F_/G_/I_/S_ prefixes are other languages); from the player's file list. That 01_01 is the first climb is inferred from the numbering."
     },
     {
       "id": "night1_landing",
       "night": 1,
       "kind": "landing",
-      "file_regex": "data/.*(landing|land|ldg)_?0?1",
+      "file_regex": "data/field/(bg|env)/f010_001",
       "cc_area_name": "Night 1 landing",
-      "_unverified": ["file_regex"]
+      "_unverified": [
+        "file_regex"
+      ],
+      "_notes": "Landing areas are data/field/bg/f0NN_*: f010_001 is the only single-area group, and f011..f019 match nights 2-9 by count, so f010 is inferred to be Night 1's landing."
     },
     {
       "id": "night1_boss",
       "night": 1,
       "kind": "boss_stage",
-      "file_regex": "data/puzzle/.*(stg|stage)_?0?1_?0?2",
+      "file_regex": "data/sound(_jp)?/pzl_boss_1\\.csb",
       "cc_area_name": "Night 1 boss climb (Immoral Beast)",
-      "_unverified": ["file_regex"]
+      "_unverified": [
+        "file_regex"
+      ],
+      "_notes": "Each boss has its own sound bank data/sound/pzl_boss_N.csb (1-10); boss 1 inferred to be Night 1's Immoral Beast."
     },
     {
       "id": "night1_boss_clear",
       "night": 1,
       "kind": "boss_clear",
-      "file_regex": "data/.*(confession|confess|clear)",
+      "file_regex": "data/event/e\\d+/",
       "cc_area_name": "Night 1 cleared (confessional booth)",
-      "_unverified": ["file_regex"]
+      "_unverified": [
+        "file_regex"
+      ],
+      "_notes": "The first story event loaded after the boss climb (only counts right after the boss)."
     }
   ]
 }

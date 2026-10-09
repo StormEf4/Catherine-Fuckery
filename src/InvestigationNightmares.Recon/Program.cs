@@ -18,6 +18,7 @@ const string Usage = """
     recon p4g [P4G folder]                         list P4G archives, portraits and wave banks
     recon p4g [P4G folder] --wav <bank.xwb> <from> <to>   export clips <from>..<to> of a bank as WAV to listen to
     recon catherine [Catherine Classic folder]     list Catherine's data files and their formats
+    recon list <any folder>                        list a folder's files and look inside CRI .cpk/.acb/.csb and XACT .xwb files
     recon sheets                                   list the sheet cells that still need checking
     Folders default to the Steam install.
     """;
@@ -33,6 +34,7 @@ try
         case "p4g": return P4G(argv.Skip(1).ToList());
         case "catherine": return Catherine(argv.Skip(1).ToList());
         case "sheets": return SheetsTodo();
+        case "list" when argv.Count > 1: return ListFolder(argv[1], "list_" + Safe(Path.GetFileName(Path.TrimEndingDirectorySeparator(Path.GetFullPath(argv[1])))));
         default: Console.WriteLine(Usage); return 1;
     }
 }
@@ -116,6 +118,8 @@ int P4G(List<string> a)
             }
         }
     }
+    if (entriesTxt.Length == 0)
+        Console.WriteLine("No DW_PACK .pac archives in this folder (the 64-bit P4G stores its files differently). Run: recon list \"" + dir + "\"");
     File.WriteAllText(Path.Combine(outDir, "pac_entries.txt"), entriesTxt.ToString());
     File.WriteAllText(Path.Combine(outDir, "bustup_index.txt"), bustupIndex.ToString());
     Console.WriteLine($"archives: {allPaths.Count} entries -> pac_entries.txt; {pngs} portrait images -> bustups/");
@@ -157,11 +161,22 @@ int P4G(List<string> a)
 int Catherine(List<string> a)
 {
     var dir = Find("cc_exe", a) ?? throw new Exception("Catherine Classic not found; pass its folder");
-    var outDir = Path.Combine(outRoot, "catherine");
-    Directory.CreateDirectory(outDir);
     Console.WriteLine($"Catherine Classic: {dir}");
+    int r = ListFolder(dir, "catherine");
+    Console.WriteLine("Next: play into Night 1 with the mod enabled; its log lists each file opened per area.");
+    return r;
+}
+
+static string Safe(string s) => string.Concat(s.Select(c => char.IsLetterOrDigit(c) || c is '-' or '_' or '.' ? c : '_'));
+
+int ListFolder(string dir, string outName)
+{
+    if (!Directory.Exists(dir)) throw new Exception($"folder not found: {dir}");
+    var outDir = Path.Combine(outRoot, outName);
+    Directory.CreateDirectory(outDir);
     var list = new StringBuilder();
     var byExt = new Dictionary<string, (int count, long bytes, string magic)>(StringComparer.OrdinalIgnoreCase);
+    var inside = new StringBuilder();
     foreach (var f in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).OrderBy(f => f))
     {
         var rel = Path.GetRelativePath(dir, f).Replace('\\', '/');
@@ -173,15 +188,62 @@ int Catherine(List<string> a)
         var ext = Path.GetExtension(f);
         byExt.TryGetValue(ext, out var cur);
         byExt[ext] = (cur.count + 1, cur.bytes + info.Length, cur.magic ?? magic);
+        try { LookInside(f, rel, head, inside); }
+        catch (Exception e) { inside.AppendLine($"== {rel}: could not read inside ({e.Message})"); }
     }
     File.WriteAllText(Path.Combine(outDir, "files.txt"), list.ToString());
     var summary = new StringBuilder("extension\tfiles\tMB\tfirst file starts with\n");
     foreach (var (ext, v) in byExt.OrderByDescending(kv => kv.Value.bytes))
         summary.AppendLine($"{ext}\t{v.count}\t{v.bytes / 1048576.0:F1}\t{v.magic}");
     File.WriteAllText(Path.Combine(outDir, "summary.txt"), summary.ToString());
+    File.WriteAllText(Path.Combine(outDir, "inside.txt"), inside.ToString());
     Console.Write(summary);
-    Console.WriteLine($"written to {outDir}. Next: play into Night 1 with the mod enabled; its log lists each file opened per area.");
+    Console.WriteLine($"written to {outDir} (files.txt, summary.txt, inside.txt)");
     return 0;
+}
+
+static void LookInside(string path, string rel, byte[] head, StringBuilder o)
+{
+    if (head.AsSpan(0, 4).SequenceEqual("CPK "u8))
+    {
+        using var cpk = CriCpk.Open(path);
+        o.AppendLine($"== {rel}: CRI CPK, {cpk.Entries.Count} files");
+        foreach (var e in cpk.Entries)
+        {
+            string magic = "";
+            try { var b = cpk.ReadStored(e); magic = Convert.ToHexString(b.AsSpan(0, Math.Min(8, b.Length))); } catch { }
+            o.AppendLine($"  {e.Path}\t{e.ExtractSize}\t{(e.Compressed ? "crilayla" : "stored")}\t{magic}");
+        }
+    }
+    else if (head.AsSpan(0, 4).SequenceEqual("WBND"u8))
+    {
+        using var bank = XactWaveBank.Open(path);
+        o.AppendLine($"== {rel}: XACT wave bank '{bank.BankName}', {bank.Entries.Count} entries (index name codec ch rate seconds)");
+        foreach (var e in bank.Entries) o.AppendLine($"  {e.Index}\t{e.Name}\t{e.Codec}\t{e.Channels}\t{e.SampleRate}\t{e.DurationSeconds:F2}");
+    }
+    else if ((rel.EndsWith(".acb", StringComparison.OrdinalIgnoreCase) || rel.EndsWith(".csb", StringComparison.OrdinalIgnoreCase)) && UtfTable.LooksLikeUtf(head))
+    {
+        var t = UtfTable.Read(File.ReadAllBytes(path));
+        o.AppendLine($"== {rel}: CRI @UTF '{t.Name}' ({t.Rows.Count} rows)");
+        DumpNames(t, o, "  ", 0);
+    }
+}
+
+// Prints the string cells (cue and track names) of a CRI table and the tables nested in its data cells.
+static void DumpNames(UtfTable t, StringBuilder o, string indent, int depth)
+{
+    if (depth > 4) return;
+    for (int r = 0; r < t.Rows.Count && r < 400; r++)
+    {
+        var strings = t.Rows[r].Where(kv => kv.Value is string s && s.Length > 0).Select(kv => $"{kv.Key}={kv.Value}").ToList();
+        var nums = t.Rows[r].Where(kv => kv.Value is byte or ushort or uint or short or int && kv.Key.Contains("Index", StringComparison.OrdinalIgnoreCase)).Select(kv => $"{kv.Key}={kv.Value}");
+        if (strings.Count > 0) o.AppendLine($"{indent}[{t.Name} {r}] {string.Join("  ", strings.Concat(nums))}");
+        foreach (var kv in t.Rows[r])
+            if (kv.Value is byte[] blob && UtfTable.LooksLikeUtf(blob))
+            {
+                try { DumpNames(UtfTable.Read(blob), o, indent + "  ", depth + 1); } catch { }
+            }
+    }
 }
 
 int SheetsTodo()

@@ -2,13 +2,30 @@
   "sheet": "music",
   "description": "Persona 4 Golden tracks played inside Catherine. Read from the player's P4G sound banks. replaces_cc_file: Catherine file to redirect so the game itself plays the track (null = the mod plays it over the scene).",
   "columns": {
-    "id": { "type": "id" },
-    "title": { "type": "string" },
-    "source": { "type": "ref", "sheet": "game_files" },
-    "wave_index": { "type": "int", "nullable": true },
-    "loop": { "type": "bool" },
-    "volume": { "type": "number" },
-    "replaces_cc_file": { "type": "string", "nullable": true }
+    "id": {
+      "type": "id"
+    },
+    "title": {
+      "type": "string"
+    },
+    "source": {
+      "type": "ref",
+      "sheet": "game_files"
+    },
+    "wave_index": {
+      "type": "int",
+      "nullable": true
+    },
+    "loop": {
+      "type": "bool"
+    },
+    "volume": {
+      "type": "number"
+    },
+    "replaces_cc_file": {
+      "type": "string",
+      "nullable": true
+    }
   },
   "rows": [
     {
@@ -19,7 +36,9 @@
       "loop": true,
       "volume": 0.8,
       "replaces_cc_file": null,
-      "_unverified": ["wave_index"],
+      "_unverified": [
+        "wave_index"
+      ],
       "_notes": "Plays during the Midnight Channel intro, over Catherine's silence before Night 1. Index: find with `recon` (longest-looping tracks listed with durations)."
     },
     {
@@ -30,8 +49,11 @@
       "loop": true,
       "volume": 0.9,
       "replaces_cc_file": null,
-      "_unverified": ["wave_index", "replaces_cc_file"],
-      "_notes": "Shadow boss theme. Once recon names Night 1's boss BGM file in data/sound, put it in replaces_cc_file so Catherine itself plays this track instead (WAV/ADX targets supported)."
+      "_unverified": [
+        "wave_index",
+        "replaces_cc_file"
+      ],
+      "_notes": "Catherine keeps all music in data/sound/bgm.cpk (CRI), not one file per track, so the WAV redirect can't apply. Until the CPK route lands, the mod plays the track itself on the boss climb."
     }
   ]
 }

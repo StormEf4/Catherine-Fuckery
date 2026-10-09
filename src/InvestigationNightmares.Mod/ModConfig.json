@@ -2,7 +2,7 @@
   "ModId": "investigation.team.nightmares",
   "ModName": "Investigation Team Nightmares",
   "ModAuthor": "StormEf4",
-  "ModVersion": "0.1.0",
+  "ModVersion": "0.1.1",
   "ModDescription": "Persona 4 Golden's Investigation Team enters Vincent's nightmares in Catherine Classic. Portraits, voices and music are read from your own Persona 4 Golden install.",
   "ModDll": "InvestigationNightmares.Mod.dll",
   "ModIcon": "",

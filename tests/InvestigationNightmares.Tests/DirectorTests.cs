@@ -86,7 +86,7 @@ public class DirectorTests
     public void Same_area_file_reopened_is_ignored()
     {
         var (d, r) = New();
-        d.OnFileOpened("C:/Games/CatherineClassic/data/puzzle/stg_01_01.bin", 0);
+        d.OnFileOpened("C:/Games/CatherineClassic/data/puzzle/script/pzl_01_01.bf", 0);
         Assert.Equal("night1_stage1", d.Area?.Id);
         int before = r.Log.Count;
         d.OnFileOpened(@"C:\Games\CatherineClassic\data\puzzle\stg_01_01.bin", 0.5);
@@ -184,6 +184,31 @@ public class DirectorTests
         Assert.Null(r.Plate);
         Assert.Contains("music-stop", r.Log);
         Assert.Contains("line boss_defeat modal", r.Log);
+    }
+
+    [Fact]
+    public void Events_outside_the_boss_climb_dont_count_as_clearing_it()
+    {
+        var (d, r) = New();
+        d.OnFileOpened("C:/Games/CatherineClassic/data/event/e004/002/cam10.nif", 0);
+        Assert.DoesNotContain("line boss_defeat modal", r.Log);
+        d.OnFileOpened("C:/Games/CatherineClassic/data/sound/pzl_boss_1.csb", 1);
+        Assert.Equal("shadow_yosuke", r.Plate);
+        d.OnFileOpened("C:/Games/CatherineClassic/data/sound/pzl_boss_10.csb", 2); // a different boss's bank: not Night 1
+        Assert.Equal("night1_boss", d.Area?.Id);
+        d.OnFileOpened("C:/Games/CatherineClassic/data/event/e005/001/a.nif", 3);
+        Assert.Contains("line boss_defeat modal", r.Log);
+    }
+
+    [Fact]
+    public void Real_catherine_paths_hit_the_right_triggers()
+    {
+        Assert.Equal("night1_stage1", SheetIndex.MatchTrigger(@"D:\Steam\steamapps\common\CatherineClassic\data\puzzle\script\pzl_01_01.bf")?.Id);
+        Assert.Equal("night1_stage1", SheetIndex.MatchTrigger("data/puzzle/script/F_pzl_01_01.bf")?.Id);
+        Assert.Null(SheetIndex.MatchTrigger("data/puzzle/script/pzl_01_02.bf"));
+        Assert.Equal("night1_landing", SheetIndex.MatchTrigger("data/field/bg/f010_001.nif")?.Id);
+        Assert.Null(SheetIndex.MatchTrigger("data/field/bg/f011_001.nif"));
+        Assert.Equal("night1_boss", SheetIndex.MatchTrigger("data/sound_jp/pzl_boss_1.csb")?.Id);
     }
 
     [Fact]

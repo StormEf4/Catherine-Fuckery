@@ -106,7 +106,8 @@ public sealed class NightDirector
                 }
                 break;
             case "boss_clear":
-                ClearBoss(now);
+                // Story events load all the time; only the first one right after the boss climb counts.
+                if (previous?.Kind == "boss_stage") ClearBoss(now);
                 break;
         }
 

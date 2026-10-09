@@ -2,13 +2,38 @@
   "sheet": "game_files",
   "description": "Every file or folder the mashup reads from either game. Paths are relative to that game's install folder. Nothing listed here is ever shipped; it is read from the player's own copy at run time.",
   "columns": {
-    "id": { "type": "id" },
-    "game": { "type": "enum", "values": ["p4g", "catherine"] },
-    "steam_appid": { "type": "int" },
-    "install_dir_name": { "type": "string" },
-    "path": { "type": "string" },
-    "format": { "type": "enum", "values": ["folder", "exe", "dwpack", "xact_wavebank", "loose_any"] },
-    "purpose": { "type": "string" }
+    "id": {
+      "type": "id"
+    },
+    "game": {
+      "type": "enum",
+      "values": [
+        "p4g",
+        "catherine"
+      ]
+    },
+    "steam_appid": {
+      "type": "int"
+    },
+    "install_dir_name": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    },
+    "format": {
+      "type": "enum",
+      "values": [
+        "folder",
+        "exe",
+        "dwpack",
+        "xact_wavebank",
+        "loose_any"
+      ]
+    },
+    "purpose": {
+      "type": "string"
+    }
   },
   "rows": [
     {
@@ -19,7 +44,10 @@
       "path": "P4G.exe",
       "format": "exe",
       "purpose": "Proves the folder found through Steam is really Persona 4 Golden (64-bit PC release).",
-      "_unverified": ["install_dir_name", "path"],
+      "_unverified": [
+        "install_dir_name",
+        "path"
+      ],
       "_notes": "App id 1113000 is the Steam store id. Folder and exe name come from community guides, not from an install."
     },
     {
@@ -30,8 +58,10 @@
       "path": "data*.pac",
       "format": "dwpack",
       "purpose": "PreApp Partners DW_PACK archives holding bustup portraits (and message scripts).",
-      "_unverified": ["path"],
-      "_notes": "Format from tge-was-taken/preappfile and Sewer56/p4gpc.modloader (DW_PACK header + 0x120-byte entries + chunked Huffman). File glob not yet checked on an install."
+      "_unverified": [
+        "path"
+      ],
+      "_notes": "Format from tge-was-taken/preappfile and Sewer56/p4gpc.modloader (DW_PACK header + 0x120-byte entries + chunked Huffman). File glob not yet checked on an install. The player's install has no .pac at the top level (likely the 64-bit release, which uses other archives): waiting on `recon list` of the P4G folder."
     },
     {
       "id": "p4g_voice_bank",
@@ -41,7 +71,9 @@
       "path": "SND/ROOT.xwb",
       "format": "xact_wavebank",
       "purpose": "XACT wave bank with the cast's voice clips (battle barks, event lines).",
-      "_unverified": ["path"],
+      "_unverified": [
+        "path"
+      ],
       "_notes": "A voice-swap mod replaces SND/ROOT.xwb; p4gpc.modloader redirects XACT banks. Whether ROOT holds voices or BGM is unconfirmed."
     },
     {
@@ -52,7 +84,9 @@
       "path": "SND/BGM.xwb",
       "format": "xact_wavebank",
       "purpose": "XACT wave bank with P4G's music.",
-      "_unverified": ["path"],
+      "_unverified": [
+        "path"
+      ],
       "_notes": "Guess. recon lists every *.xwb under SND with entry counts and durations; pick the bank whose entries are minutes long."
     },
     {
@@ -63,8 +97,7 @@
       "path": "Catherine.exe",
       "format": "exe",
       "purpose": "The process the Reloaded-II mod loads into.",
-      "_unverified": ["path"],
-      "_notes": "Folder name CatherineClassic is used by Shasties/catherine_character_mods. Exe name from a Steam forum post."
+      "_notes": "Catherine.exe (10 MB) is in the player's install, next to steam_api.dll."
     },
     {
       "id": "cc_sound_dir",
@@ -74,7 +107,7 @@
       "path": "data/sound",
       "format": "folder",
       "purpose": "Loose music/sound files; boss track is redirected here.",
-      "_notes": "A published HQ BGM mod installs by extracting into data/sound, which suggests it uses loose files."
+      "_notes": "Verified: Catherine's music is one CRI archive, data/sound/bgm.cpk (+ bgm.csb cue bank); voices in *_voice.cpk; boss sound banks pzl_boss_1..10.csb. A Japanese-voice copy is in data/sound_jp."
     },
     {
       "id": "cc_puzzle_dir",

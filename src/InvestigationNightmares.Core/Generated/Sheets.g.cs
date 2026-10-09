@@ -92,7 +92,7 @@ public static class Sheets
         new("p4g_data_pacs", "p4g", 1113000, "Persona 4 Golden", "data*.pac", "dwpack", "PreApp Partners DW_PACK archives holding bustup portraits (and message scripts).", new string[] { "path" }),
         new("p4g_voice_bank", "p4g", 1113000, "Persona 4 Golden", "SND/ROOT.xwb", "xact_wavebank", "XACT wave bank with the cast's voice clips (battle barks, event lines).", new string[] { "path" }),
         new("p4g_bgm_bank", "p4g", 1113000, "Persona 4 Golden", "SND/BGM.xwb", "xact_wavebank", "XACT wave bank with P4G's music.", new string[] { "path" }),
-        new("cc_exe", "catherine", 893180, "CatherineClassic", "Catherine.exe", "exe", "The process the Reloaded-II mod loads into.", new string[] { "path" }),
+        new("cc_exe", "catherine", 893180, "CatherineClassic", "Catherine.exe", "exe", "The process the Reloaded-II mod loads into.", new string[] {  }),
         new("cc_sound_dir", "catherine", 893180, "CatherineClassic", "data/sound", "folder", "Loose music/sound files; boss track is redirected here.", new string[] {  }),
         new("cc_puzzle_dir", "catherine", 893180, "CatherineClassic", "data/puzzle", "folder", "Stage data; which stage file opens tells the mod where Vincent is.", new string[] {  }),
     };
@@ -144,10 +144,10 @@ public static class Sheets
 
     public static readonly IReadOnlyList<TriggersRow> Triggers = new TriggersRow[]
     {
-        new("night1_stage1", 1, "stage", "data/puzzle/.*(stg|stage)_?0?1_?0?1", "Night 1, first climb", new string[] { "file_regex" }),
-        new("night1_landing", 1, "landing", "data/.*(landing|land|ldg)_?0?1", "Night 1 landing", new string[] { "file_regex" }),
-        new("night1_boss", 1, "boss_stage", "data/puzzle/.*(stg|stage)_?0?1_?0?2", "Night 1 boss climb (Immoral Beast)", new string[] { "file_regex" }),
-        new("night1_boss_clear", 1, "boss_clear", "data/.*(confession|confess|clear)", "Night 1 cleared (confessional booth)", new string[] { "file_regex" }),
+        new("night1_stage1", 1, "stage", "data/puzzle/script/([A-Z]_)?pzl_01_01(_360)?\\.bf", "Night 1, first climb", new string[] { "file_regex" }),
+        new("night1_landing", 1, "landing", "data/field/(bg|env)/f010_001", "Night 1 landing", new string[] { "file_regex" }),
+        new("night1_boss", 1, "boss_stage", "data/sound(_jp)?/pzl_boss_1\\.csb", "Night 1 boss climb (Immoral Beast)", new string[] { "file_regex" }),
+        new("night1_boss_clear", 1, "boss_clear", "data/event/e\\d+/", "Night 1 cleared (confessional booth)", new string[] { "file_regex" }),
     };
 
     public static readonly IReadOnlyList<TuningRow> Tuning = new TuningRow[]

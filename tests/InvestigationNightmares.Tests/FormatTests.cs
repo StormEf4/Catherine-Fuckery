@@ -216,3 +216,37 @@ public class FormatTests
     [InlineData("data?.pac", "data10.pac", false)]
     public void Glob_matches(string glob, string path, bool expected) => Assert.Equal(expected, Glob.IsMatch(glob, path));
 }
+
+public class CriTests
+{
+    [Fact]
+    public void Utf_table_round_trips_all_column_types()
+    {
+        var bytes = UtfTable.Write("Test", new[] { "B", "U16", "U32", "U64", "Name", "Blob" }, new[]
+        {
+            new object[] { (byte)1, (ushort)500, 70000u, 1UL << 40, "bgm_boss_01", new byte[] { 9, 8 } },
+            new object[] { (byte)2, (ushort)7, 3u, 5UL, "landing", new byte[] { 1 } },
+        });
+        var t = UtfTable.Read(bytes);
+        Assert.Equal("Test", t.Name);
+        Assert.Equal(2, t.Rows.Count);
+        Assert.Equal((ushort)500, t.Rows[0]["U16"]);
+        Assert.Equal(1UL << 40, t.Rows[0]["U64"]);
+        Assert.Equal("landing", t.Rows[1]["Name"]);
+        Assert.Equal(new byte[] { 9, 8 }, (byte[])t.Rows[0]["Blob"]!);
+    }
+
+    [Fact]
+    public void Cpk_lists_and_reads_files()
+    {
+        var a = Encoding.ASCII.GetBytes("ADX-ish data");
+        var b = new byte[3000];
+        new Random(1).NextBytes(b);
+        var cpk = CriCpk.Build(new[] { ("bgm/bgm_01.adx", a), ("bustup/b002_000.bin", b) });
+        using var c = new CriCpk(new MemoryStream(cpk));
+        Assert.Equal(new[] { "bgm/bgm_01.adx", "bustup/b002_000.bin" }, c.Entries.Select(e => e.Path));
+        Assert.Equal(a, c.ReadStored(c.Entries[0]));
+        Assert.Equal(b, c.ReadStored(c.Entries[1]));
+        Assert.False(c.Entries[1].Compressed);
+    }
+}
