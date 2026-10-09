@@ -50,6 +50,9 @@ public static class Sheets
         new("mod_power_1", "mod", "Use Izanagi's Sukunda", "BACK+LEFT_SHOULDER", "VK_1", new string[] {  }),
         new("mod_power_2", "mod", "Use Jiraiya's Garu", "BACK+RIGHT_SHOULDER", "VK_2", new string[] {  }),
         new("mod_advance", "mod", "Advance Team dialogue", "A", "VK_RETURN", new string[] {  }),
+        new("mod_menu_up", "mod", "Previous Team member in the TV menu", "DPAD_UP", "VK_UP", new string[] {  }),
+        new("mod_menu_down", "mod", "Next Team member in the TV menu", "DPAD_DOWN", "VK_DOWN", new string[] {  }),
+        new("mod_cancel", "mod", "Close the Team's TV menu", "B", "VK_ESCAPE", new string[] {  }),
     };
 
     public static readonly IReadOnlyList<BossesRow> Bosses = new BossesRow[]
@@ -96,7 +99,7 @@ public static class Sheets
 
     public static readonly IReadOnlyList<HooksRow> Hooks = new HooksRow[]
     {
-        new("d3d9_endscene", "d3d9.dll", "IDirect3DDevice9::EndScene", 42, "Draw portraits, text boxes, Persona cut-ins and TV static over the frame.", "overlay", new string[] {  }),
+        new("d3d9_present", "d3d9.dll", "IDirect3DDevice9::Present", 17, "Once per frame: draw portraits, text boxes, Persona cut-ins and TV static onto the back buffer, and run the night's director.", "overlay", new string[] {  }),
         new("d3d9_reset", "d3d9.dll", "IDirect3DDevice9::Reset", 16, "Release overlay textures before a device reset (resolution change, alt-tab).", "overlay", new string[] {  }),
         new("createfile_w", "kernel32.dll", "CreateFileW", null, "See which stage/area file Catherine opens (triggers) and swap the boss track (music).", "triggers", new string[] {  }),
         new("createfile_a", "kernel32.dll", "CreateFileA", null, "Same as CreateFileW for ANSI callers.", "triggers", new string[] {  }),

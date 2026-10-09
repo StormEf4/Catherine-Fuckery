@@ -2,20 +2,98 @@
   "sheet": "bindings",
   "description": "Inputs. 'cc_' rows are Catherine's own controls, which the Garu power presses for the player. 'mod_' rows are the mashup's hotkeys. xinput_buttons uses XINPUT_GAMEPAD_* names joined by '+'; vk is a Windows virtual-key name.",
   "columns": {
-    "id": { "type": "id" },
-    "owner": { "type": "enum", "values": ["catherine", "mod"] },
-    "action": { "type": "string" },
-    "xinput_buttons": { "type": "string" },
-    "vk": { "type": "string" }
+    "id": {
+      "type": "id"
+    },
+    "owner": {
+      "type": "enum",
+      "values": [
+        "catherine",
+        "mod"
+      ]
+    },
+    "action": {
+      "type": "string"
+    },
+    "xinput_buttons": {
+      "type": "string"
+    },
+    "vk": {
+      "type": "string"
+    }
   },
   "rows": [
-    { "id": "cc_grab", "owner": "catherine", "action": "Grab / hold block (hold)", "xinput_buttons": "B", "vk": "VK_SPACE",
-      "_unverified": ["xinput_buttons", "vk"], "_notes": "Catherine's default grab button isn't confirmed. Check Options > Controls and set it here." },
-    { "id": "cc_back", "owner": "catherine", "action": "Move away from the wall (with grab held = pull)", "xinput_buttons": "DPAD_DOWN", "vk": "VK_S",
-      "_unverified": ["vk"], "_notes": "Camera-relative 'down' pulls when facing the wall in Catherine's default camera." },
-    { "id": "mod_talk", "owner": "mod", "action": "Talk to the Investigation Team (on a landing)", "xinput_buttons": "BACK+Y", "vk": "VK_T" },
-    { "id": "mod_power_1", "owner": "mod", "action": "Use Izanagi's Sukunda", "xinput_buttons": "BACK+LEFT_SHOULDER", "vk": "VK_1" },
-    { "id": "mod_power_2", "owner": "mod", "action": "Use Jiraiya's Garu", "xinput_buttons": "BACK+RIGHT_SHOULDER", "vk": "VK_2" },
-    { "id": "mod_advance", "owner": "mod", "action": "Advance Team dialogue", "xinput_buttons": "A", "vk": "VK_RETURN" }
+    {
+      "id": "cc_grab",
+      "owner": "catherine",
+      "action": "Grab / hold block (hold)",
+      "xinput_buttons": "B",
+      "vk": "VK_SPACE",
+      "_unverified": [
+        "xinput_buttons",
+        "vk"
+      ],
+      "_notes": "Catherine's default grab button isn't confirmed. Check Options > Controls and set it here."
+    },
+    {
+      "id": "cc_back",
+      "owner": "catherine",
+      "action": "Move away from the wall (with grab held = pull)",
+      "xinput_buttons": "DPAD_DOWN",
+      "vk": "VK_S",
+      "_unverified": [
+        "vk"
+      ],
+      "_notes": "Camera-relative 'down' pulls when facing the wall in Catherine's default camera."
+    },
+    {
+      "id": "mod_talk",
+      "owner": "mod",
+      "action": "Talk to the Investigation Team (on a landing)",
+      "xinput_buttons": "BACK+Y",
+      "vk": "VK_T"
+    },
+    {
+      "id": "mod_power_1",
+      "owner": "mod",
+      "action": "Use Izanagi's Sukunda",
+      "xinput_buttons": "BACK+LEFT_SHOULDER",
+      "vk": "VK_1"
+    },
+    {
+      "id": "mod_power_2",
+      "owner": "mod",
+      "action": "Use Jiraiya's Garu",
+      "xinput_buttons": "BACK+RIGHT_SHOULDER",
+      "vk": "VK_2"
+    },
+    {
+      "id": "mod_advance",
+      "owner": "mod",
+      "action": "Advance Team dialogue",
+      "xinput_buttons": "A",
+      "vk": "VK_RETURN"
+    },
+    {
+      "id": "mod_menu_up",
+      "owner": "mod",
+      "action": "Previous Team member in the TV menu",
+      "xinput_buttons": "DPAD_UP",
+      "vk": "VK_UP"
+    },
+    {
+      "id": "mod_menu_down",
+      "owner": "mod",
+      "action": "Next Team member in the TV menu",
+      "xinput_buttons": "DPAD_DOWN",
+      "vk": "VK_DOWN"
+    },
+    {
+      "id": "mod_cancel",
+      "owner": "mod",
+      "action": "Close the Team's TV menu",
+      "xinput_buttons": "B",
+      "vk": "VK_ESCAPE"
+    }
   ]
 }

@@ -31,11 +31,11 @@
   },
   "rows": [
     {
-      "id": "d3d9_endscene",
+      "id": "d3d9_present",
       "module": "d3d9.dll",
-      "symbol": "IDirect3DDevice9::EndScene",
-      "vtable_index": 42,
-      "purpose": "Draw portraits, text boxes, Persona cut-ins and TV static over the frame.",
+      "symbol": "IDirect3DDevice9::Present",
+      "vtable_index": 17,
+      "purpose": "Once per frame: draw portraits, text boxes, Persona cut-ins and TV static onto the back buffer, and run the night's director.",
       "system": "overlay"
     },
     {

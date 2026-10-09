@@ -99,6 +99,40 @@ public sealed record Pcm16(int Channels, int SampleRate, short[] Samples)
 {
     public double DurationSeconds => Samples.Length / (double)(Channels * SampleRate);
 
+    /// <summary>Linear-interpolation resample and mono/stereo conversion (to match a file Catherine expects).</summary>
+    public Pcm16 Convert(int sampleRate, int channels)
+    {
+        if (channels is < 1 or > 2 || Channels is < 1 or > 2) throw new NotSupportedException("only mono/stereo");
+        if (sampleRate == SampleRate && channels == Channels) return this;
+        int inFrames = Samples.Length / Channels;
+        long outFrames = (long)inFrames * sampleRate / SampleRate;
+        var o = new short[outFrames * channels];
+        double step = SampleRate / (double)sampleRate;
+        for (long f = 0; f < outFrames; f++)
+        {
+            double pos = f * step;
+            int i0 = (int)pos;
+            int i1 = Math.Min(i0 + 1, inFrames - 1);
+            double frac = pos - i0;
+            for (int c = 0; c < channels; c++)
+            {
+                double Sample(int frame) => Channels == channels ? Samples[frame * Channels + c]
+                    : Channels == 1 ? Samples[frame]
+                    : (Samples[frame * 2] + Samples[frame * 2 + 1]) / 2.0;
+                o[f * channels + c] = (short)Math.Round(Sample(i0) * (1 - frac) + Sample(i1) * frac);
+            }
+        }
+        return new Pcm16(channels, sampleRate, o);
+    }
+
+    /// <summary>Channels and sample rate of a PCM WAV header, or null if the bytes aren't a PCM WAV.</summary>
+    public static (int channels, int rate)? ProbeWav(ReadOnlySpan<byte> head)
+    {
+        if (head.Length < 36 || !head[..4].SequenceEqual("RIFF"u8) || !head.Slice(8, 4).SequenceEqual("WAVE"u8) || !head.Slice(12, 4).SequenceEqual("fmt "u8)) return null;
+        if (BinaryPrimitives.ReadInt16LittleEndian(head[20..]) != 1) return null;
+        return (BinaryPrimitives.ReadInt16LittleEndian(head[22..]), BinaryPrimitives.ReadInt32LittleEndian(head[24..]));
+    }
+
     public byte[] ToWav()
     {
         int dataLen = Samples.Length * 2;

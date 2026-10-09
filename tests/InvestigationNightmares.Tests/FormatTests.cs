@@ -193,6 +193,21 @@ public class FormatTests
         Assert.Equal(2, back.Channels);
     }
 
+    [Fact]
+    public void Pcm_converts_rate_and_channels()
+    {
+        var mono = new Pcm16(1, 22050, Sine(22050, 1, 100, 22050));
+        var st = mono.Convert(44100, 2);
+        Assert.Equal(2, st.Channels);
+        Assert.Equal(44100, st.SampleRate);
+        Assert.InRange(st.DurationSeconds, 0.999, 1.001);
+        Assert.Equal(st.Samples[200], st.Samples[201]); // both channels carry the mono signal
+        var back = st.Convert(22050, 1);
+        Assert.InRange(Math.Abs(back.Samples[1000] - mono.Samples[1000]), 0, 300);
+        Assert.Equal((2, 44100), Pcm16.ProbeWav(st.ToWav()));
+        Assert.Null(Pcm16.ProbeWav(new byte[64]));
+    }
+
     [Theory]
     [InlineData("bustup/*002_*", "bustup/b002_001.bin", true)]
     [InlineData("bustup/*002_*", "bustup/sub/b002_001.bin", false)]

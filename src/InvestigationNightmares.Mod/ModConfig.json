@@ -1,0 +1,21 @@
+{
+  "ModId": "investigation.team.nightmares",
+  "ModName": "Investigation Team Nightmares",
+  "ModAuthor": "StormEf4",
+  "ModVersion": "0.1.0",
+  "ModDescription": "Persona 4 Golden's Investigation Team enters Vincent's nightmares in Catherine Classic. Portraits, voices and music are read from your own Persona 4 Golden install.",
+  "ModDll": "InvestigationNightmares.Mod.dll",
+  "ModIcon": "",
+  "ModR2RManagedDll32": "",
+  "ModR2RManagedDll64": "",
+  "ModNativeDll32": "",
+  "ModNativeDll64": "",
+  "IsLibrary": false,
+  "ReleaseMetadataFileName": "",
+  "PluginData": {},
+  "IsUniversalMod": false,
+  "ModDependencies": [ "reloaded.sharedlib.hooks" ],
+  "OptionalDependencies": [],
+  "SupportedAppId": [ "catherine.exe" ],
+  "ProjectUrl": "https://github.com/StormEf4/Catherine-Fuckery"
+}
