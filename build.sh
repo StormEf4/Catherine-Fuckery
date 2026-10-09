@@ -12,7 +12,7 @@ dotnet test tests/InvestigationNightmares.Tests -c Release
 
 rm -rf dist && mkdir -p dist/stage
 dotnet publish src/InvestigationNightmares.Mod -c Release -o dist/stage/investigation.team.nightmares -p:DebugType=none
-dotnet publish src/InvestigationNightmares.Recon -c Release -r win-x64 --self-contained false -o dist/stage/recon -p:DebugType=none
+dotnet publish src/InvestigationNightmares.Recon -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist/stage/recon -p:DebugType=none
 cp README.md dist/stage/investigation.team.nightmares/README.md
 
 (cd dist/stage && python3 - "$VERSION" <<'EOF'
